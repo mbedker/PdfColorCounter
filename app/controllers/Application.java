@@ -4,6 +4,7 @@ import managers.PDFManager;
 import model.PDFPage;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.icepdf.core.*;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -20,17 +21,19 @@ public class Application extends Controller {
         return ok(index.render("Test"));
     }
 
-    public static Result loadFile() {
+    public static Result loadFile() throws IOException {
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart pdfFilePart = body.getFile("pdfFile");
         if (pdfFilePart != null) {
-            System.out.println(pdfFilePart.getContentType());
+            System.out.println("The parsing has begun");
             File file = pdfFilePart.getFile();
             if (file != null) {
-
+                PDFManager.get().parsePDF(file);
+                return ok("So it begins");
             }
         } else {
             return ok("There was an error with the file you gave me.");
         }
+        return null;
     }
 }

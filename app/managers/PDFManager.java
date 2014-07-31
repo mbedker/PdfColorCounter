@@ -1,9 +1,14 @@
 package managers;
 
 
+import javafx.stage.Screen;
 import model.PDFPage;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.icepdf.core.exceptions.PDFException;
+import org.icepdf.core.pobjects.*;
+import org.icepdf.core.*;
+import org.icepdf.core.util.GraphicsRenderingHints;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -26,29 +31,20 @@ public class PDFManager {
     private PDFManager() {}
 
 
-    public List<PDFPage> parsePDF (File pdfFile)throws IOException {
-        PDDocument document = PDDocument.load(pdfFile);
-
-        if (document.isEncrypted()) {
-            try {
-                document.decrypt("");
-            } catch (Exception e) {
-                throw new RuntimeException("The PDF document is encrypted with a password");
-            }
+    public List<PDFPage> parsePDF (File file)throws IOException {
+        List<PDFPage> parsedPDFpages = null;
+        Document document = new Document();
+        List<BufferedImage> pages = null;
+        for (int i = 0; i < document.getNumberOfPages(); i++) {
+            BufferedImage image = (BufferedImage) document.getPageImage(i, GraphicsRenderingHints.SCREEN, Page.BOUNDARY_CROPBOX, 0f, 0f);
+            pages.add(image);
         }
-
-        List<PDPage> pdfPages = document.getDocumentCatalog().getAllPages();
-        List<PDFPage> pages = new ArrayList<PDFPage>(pdfPages.size());
-
-        for (PDPage pdfPage : pdfPages) {
-            BufferedImage bufferedHolder = pdfPage.convertToImage();
-            PDFPage pageHolder = new PDFPage(colorPercentCounter(bufferedHolder));
-            pages.add(pageHolder);
+        for (int i = 0; i < pages.size(); i++) {
+            PDFPage pageHolder = new PDFPage(colorPercentCounter(pages.get(i)), i+1);
+            parsedPDFpages.add(i, pageHolder);
         }
-
-        return pages;
+        return parsedPDFpages;
     }
-
 
     private int colorPercentCounter(BufferedImage image) {
         int width = image.getWidth();
