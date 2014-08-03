@@ -1,14 +1,16 @@
 package managers;
 
 
-import javafx.stage.Screen;
-import model.PDFPage;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
+import com.avaje.ebean.Ebean;
+import model.PDFSession;
+import model.PDFSessionStatus;
+import model.PageInformation;
+import model.ParsedPDFPage;
 import org.icepdf.core.exceptions.PDFException;
+import org.icepdf.core.exceptions.PDFSecurityException;
 import org.icepdf.core.pobjects.*;
-import org.icepdf.core.*;
 import org.icepdf.core.util.GraphicsRenderingHints;
+import util.ColorUtil;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -28,22 +30,49 @@ public class PDFManager {
         return mInstance;
     }
 
-    private PDFManager() {}
+    private PDFManager() {
+    }
 
 
-    public List<PDFPage> parsePDF (File file)throws IOException {
-        List<PDFPage> parsedPDFpages = null;
-        Document document = new Document();
-        List<BufferedImage> pages = null;
-        for (int i = 0; i < document.getNumberOfPages(); i++) {
-            BufferedImage image = (BufferedImage) document.getPageImage(i, GraphicsRenderingHints.SCREEN, Page.BOUNDARY_CROPBOX, 0f, 0f);
-            pages.add(image);
+    public PDFSession parsePDF(final File pdfFile) {
+        final Document document = new Document();
+        try {
+            document.setFile(pdfFile.getAbsolutePath());
+        } catch (PDFException e) {
+            e.printStackTrace();
+        } catch (PDFSecurityException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        for (int i = 0; i < pages.size(); i++) {
-            PDFPage pageHolder = new PDFPage(colorPercentCounter(pages.get(i)), i+1);
-            parsedPDFpages.add(i, pageHolder);
+
+        final PDFSession session = new PDFSession();
+        session.startDate = System.currentTimeMillis();
+        session.numberOfPages = document.getNumberOfPages();
+        Ebean.save(session);
+        return session;
+    }
+    //scott has threading block here
+
+    private void startParsingPdf(final PDFSession session, final Document document) {
+        int pageNum = session.numberOfPages;
+        // scott's countdown latch
+
+        for (int i = 0; i < pageNum; i++) {
+            final int finalI = i + 1;
+            BufferedImage image = (BufferedImage) document.getPageImage(finalI - 1, GraphicsRenderingHints.SCREEN,
+                    Page.BOUNDARY_CROPBOX, 0f, 1f);
+            int percentColor = colorPercentCounter(image);
+
+            ParsedPDFPage parsedPDFPage = new ParsedPDFPage();
+            parsedPDFPage.sessionId = session.id;
+            parsedPDFPage.date = System.currentTimeMillis();
+            parsedPDFPage.pageNumber = finalI;
+            parsedPDFPage.percentColor = percentColor;
+
+            System.out.println(parsedPDFPage.pageNumber + " : " + parsedPDFPage.percentColor);
+            Ebean.save(parsedPDFPage);
         }
-        return parsedPDFpages;
     }
 
     private int colorPercentCounter(BufferedImage image) {
@@ -52,10 +81,10 @@ public class PDFManager {
 
         int count = 0;
 
-        for (int x = 0; x < width; x ++) {
-            for (int y = 0; y < height; y ++) {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
                 int color = image.getRGB(x, y);
-                if (!isGreyscale(color)) {
+                if (!ColorUtil.isGreyscale(color, MAX_GREYSCALE_DIFFERENCE)) {
                     count++;
                 }
             }
@@ -63,42 +92,43 @@ public class PDFManager {
         return 100 * count / (width * height);
     }
 
-
-    private boolean isGreyscale(int color) {
-        // A perfect Greyscale color would be one where R, G, and B were equal.
-        int red = red(color);
-        int green = green(color);
-        int blue = blue(color);
-
-        int max = Math.max(Math.max(red, green), blue);
-        int min = Math.min(Math.min(red, green), blue);
-
-        return (max - min) <= MAX_GREYSCALE_DIFFERENCE;
+    public List<PageInformation> pageInformation (String pdfSessionId, int pageNumber) {
+        List<ParsedPDFPage> parsedPages = Ebean.createQuery(ParsedPDFPage.class)
+                .orderBy("pageNumber ASC")
+                .where()
+                .eq("sessionId", pdfSessionId)
+                .findList();
+        List<PageInformation> pageInformationList = new ArrayList<>(parsedPages.size());
+        for (ParsedPDFPage page: parsedPages){
+            PageInformation pageInformation = new PageInformation();
+            pageInformation.pageNumber = page.pageNumber;
+            pageInformation.percentColor = page.percentColor;
+            pageInformationList.add(pageInformation);
+        }
+        return pageInformationList;
     }
 
-    /**
-     * Return the red component of a color int. This is the same as saying
-     * (color >> 16) & 0xFF
-     */
-    public static int red(int color) {
-        return (color >> 16) & 0xFF;
-    }
+    public PDFSessionStatus getStatus(String pdfSessionID) {
+        PDFSession session = Ebean.find(PDFSession.class, pdfSessionID);
 
-    /**
-     * Return the green component of a color int. This is the same as saying
-     * (color >> 8) & 0xFF
-     */
-    public static int green(int color) {
-        return (color >> 8) & 0xFF;
-    }
+        if (session == null)
+            return null;
 
-    /**
-     * Return the blue component of a color int. This is the same as saying
-     * color & 0xFF
-     */
-    public static int blue(int color) {
-        return color & 0xFF;
+        List<ParsedPDFPage> parsedPDFPages = Ebean.createQuery(ParsedPDFPage.class)
+                .orderBy("pageNumber ASC")
+                .where()
+                .eq("sessionID", pdfSessionID)
+                .findList();
+
+        PDFSessionStatus  status= new PDFSessionStatus();
+        status.sessionId = pdfSessionID;
+        status.competedPages = new ArrayList<Integer>(parsedPDFPages.size());
+
+        for (ParsedPDFPage page : parsedPDFPages) {
+            status.competedPages.add(page.pageNumber);
+        }
+        return status;
+
     }
 }
-
 

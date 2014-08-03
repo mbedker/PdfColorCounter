@@ -1,19 +1,18 @@
 package controllers;
 
 import managers.PDFManager;
-import model.PDFPage;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.icepdf.core.*;
+import model.PDFSession;
+import model.PDFSessionStatus;
+import model.PageInformation;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import views.html.index;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 public class Application extends Controller {
 
@@ -21,19 +20,27 @@ public class Application extends Controller {
         return ok(index.render("Test"));
     }
 
-    public static Result loadFile() throws IOException {
+    public static Result countPDF()  {
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart pdfFilePart = body.getFile("pdfFile");
         if (pdfFilePart != null) {
             System.out.println("The parsing has begun");
-            File file = pdfFilePart.getFile();
-            if (file != null) {
-                PDFManager.get().parsePDF(file);
-                return ok("So it begins");
-            }
+            File pdfFile = pdfFilePart.getFile();
+            PDFSession pdfSession = PDFManager.get().parsePDF(pdfFile);
+            return ok(Json.toJson(pdfSession));
         } else {
             return ok("There was an error with the file you gave me.");
         }
-        return null;
+    }
+
+    public static Result pageInformation(String pdfSessionId, String pageNumberString) {
+        int pageNumber = Integer.parseInt(pageNumberString);
+        List<PageInformation> pageInformation = PDFManager.get().pageInformation(pdfSessionId, pageNumber);
+        return ok(Json.toJson(pageInformation));
+    }
+
+    public static Result status (String pdfSessionID) {
+        PDFSessionStatus status = PDFManager.get().getStatus(pdfSessionID);
+        return ok(Json.toJson(status));
     }
 }
