@@ -26,7 +26,13 @@ public class Application extends Controller {
         if (pdfFilePart != null) {
             System.out.println("The parsing has begun");
             File pdfFile = pdfFilePart.getFile();
-            PDFSession pdfSession = PDFManager.get().parsePDF(pdfFile);
+            PDFSession pdfSession;
+            try {
+                pdfSession = PDFManager.get().parsePDF(pdfFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return ok("There was an error parsing the PDF");
+            }
             return ok(Json.toJson(pdfSession));
         } else {
             return ok("There was an error with the file you gave me.");

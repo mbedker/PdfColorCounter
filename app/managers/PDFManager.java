@@ -12,7 +12,9 @@ import org.icepdf.core.pobjects.*;
 import org.icepdf.core.util.GraphicsRenderingHints;
 import util.ColorUtil;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,7 +36,7 @@ public class PDFManager {
     }
 
 
-    public PDFSession parsePDF(final File pdfFile) {
+    public PDFSession parsePDF(final File pdfFile) throws IOException {
         final Document document = new Document();
         try {
             document.setFile(pdfFile.getAbsolutePath());
@@ -49,12 +51,13 @@ public class PDFManager {
         final PDFSession session = new PDFSession();
         session.startDate = System.currentTimeMillis();
         session.numberOfPages = document.getNumberOfPages();
+        startParsingPdf(session, document);
         Ebean.save(session);
         return session;
     }
     //scott has threading block here
 
-    private void startParsingPdf(final PDFSession session, final Document document) {
+    private void startParsingPdf(final PDFSession session, final Document document) throws IOException {
         int pageNum = session.numberOfPages;
         // scott's countdown latch
 
@@ -64,11 +67,15 @@ public class PDFManager {
                     Page.BOUNDARY_CROPBOX, 0f, 1f);
             int percentColor = colorPercentCounter(image);
 
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", baos);
+
             ParsedPDFPage parsedPDFPage = new ParsedPDFPage();
             parsedPDFPage.sessionId = session.id;
             parsedPDFPage.date = System.currentTimeMillis();
             parsedPDFPage.pageNumber = finalI;
             parsedPDFPage.percentColor = percentColor;
+            parsedPDFPage.imageBlob = baos.toByteArray() ;
 
             System.out.println(parsedPDFPage.pageNumber + " : " + parsedPDFPage.percentColor);
             Ebean.save(parsedPDFPage);
@@ -103,6 +110,7 @@ public class PDFManager {
             PageInformation pageInformation = new PageInformation();
             pageInformation.pageNumber = page.pageNumber;
             pageInformation.percentColor = page.percentColor;
+            pageInformation.imageblob = page.imageBlob;
             pageInformationList.add(pageInformation);
         }
         return pageInformationList;
@@ -128,7 +136,6 @@ public class PDFManager {
             status.competedPages.add(page.pageNumber);
         }
         return status;
-
     }
 }
 
