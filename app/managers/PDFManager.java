@@ -70,15 +70,15 @@ public class PDFManager {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(image, "png", baos);
 
-            ParsedPDFPage parsedPDFPage = new ParsedPDFPage();
-            parsedPDFPage.sessionId = session.id;
-            parsedPDFPage.date = System.currentTimeMillis();
-            parsedPDFPage.pageNumber = finalI;
-            parsedPDFPage.percentColor = percentColor;
-            parsedPDFPage.imageBlob = baos.toByteArray() ;
+            ParsedPDFPage page = new ParsedPDFPage();
+            page.sessionId = session.id;
+            page.date = System.currentTimeMillis();
+            page.pageNumber = finalI;
+            page.percentColor = percentColor;
+            page.imageBlob = baos.toByteArray() ;
 
-            System.out.println(parsedPDFPage.pageNumber + " : " + parsedPDFPage.percentColor);
-            Ebean.save(parsedPDFPage);
+            System.out.println(page.pageNumber + " : " + page.percentColor);
+            Ebean.save(page);
         }
     }
 
@@ -107,11 +107,11 @@ public class PDFManager {
                 .findList();
         List<PageInformation> pageInformationList = new ArrayList<>(parsedPages.size());
         for (ParsedPDFPage page: parsedPages){
-            PageInformation pageInformation = new PageInformation();
-            pageInformation.pageNumber = page.pageNumber;
-            pageInformation.percentColor = page.percentColor;
-            pageInformation.imageblob = page.imageBlob;
-            pageInformationList.add(pageInformation);
+            PageInformation pageInfo = new PageInformation();
+            pageInfo.pageNumber = page.pageNumber;
+            pageInfo.percentColor = page.percentColor;
+            pageInfo.imageblob = page.imageBlob;
+            pageInformationList.add(pageInfo);
         }
         return pageInformationList;
     }
