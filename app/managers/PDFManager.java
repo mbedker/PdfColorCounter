@@ -2,10 +2,7 @@ package managers;
 
 
 import com.avaje.ebean.Ebean;
-import model.PDFSession;
-import model.PDFSessionStatus;
-import model.PageInformation;
-import model.ParsedPDFPage;
+import model.*;
 import org.icepdf.core.exceptions.PDFException;
 import org.icepdf.core.exceptions.PDFSecurityException;
 import org.icepdf.core.pobjects.*;
@@ -19,12 +16,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PDFManager {
 
     private static final int MAX_GREYSCALE_DIFFERENCE = 5;
 
-    private static PDFManager mInstance;
+    private static PDFManager mInstance = null;
+
+    private final ExecutorService mDocumentExecutor = Executors.newCachedThreadPool();
 
     public static PDFManager get() {
         if (mInstance == null)
@@ -35,51 +36,87 @@ public class PDFManager {
     private PDFManager() {
     }
 
-
     public PDFSession parsePDF(final File pdfFile) throws IOException {
         final Document document = new Document();
         try {
             document.setFile(pdfFile.getAbsolutePath());
-        } catch (PDFException e) {
-            e.printStackTrace();
-        } catch (PDFSecurityException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (PDFException | PDFSecurityException | IOException e) {
             e.printStackTrace();
         }
+
 
         final PDFSession session = new PDFSession();
         session.startDate = System.currentTimeMillis();
         session.numberOfPages = document.getNumberOfPages();
         startParsingPdf(session, document);
         Ebean.save(session);
+
+        mDocumentExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                startParsingPdf(session, document);
+            }
+        });
+
         return session;
     }
-    //scott has threading block here
 
-    private void startParsingPdf(final PDFSession session, final Document document) throws IOException {
+    private void startParsingPdf(final PDFSession session, final Document document) {
         int pageNum = session.numberOfPages;
-        // scott's countdown latch
+        final CountDownLatch latch = new CountDownLatch(pageNum);
+
+        ExecutorService mPageExecutor = Executors.newFixedThreadPool(
+                Runtime.getRuntime().availableProcessors() + 1, new ThreadFactory() {
+                    private AtomicInteger counter = new AtomicInteger(0);
+
+                    @Override
+                    public Thread newThread(Runnable r) {
+                        Thread t = new Thread(r, "PDFParseThread-" + counter.incrementAndGet());
+                        t.setPriority(Thread.MIN_PRIORITY);
+                        return t;
+                    }
+                });
 
         for (int i = 0; i < pageNum; i++) {
             final int finalI = i + 1;
-            BufferedImage image = (BufferedImage) document.getPageImage(finalI - 1, GraphicsRenderingHints.SCREEN,
-                    Page.BOUNDARY_CROPBOX, 0f, 1f);
-            int percentColor = colorPercentCounter(image);
+            mPageExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        System.out.println("Thread" + finalI + "initiated");
+                        BufferedImage image = (BufferedImage) document.getPageImage(finalI - 1, GraphicsRenderingHints.SCREEN,
+                                Page.BOUNDARY_CROPBOX, 0f, 1f);
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(image, "png", baos);
+                        int percentColor = colorPercentCounter(image);
 
-            ParsedPDFPage page = new ParsedPDFPage();
-            page.sessionId = session.id;
-            page.date = System.currentTimeMillis();
-            page.pageNumber = finalI;
-            page.percentColor = percentColor;
-            page.imageBlob = baos.toByteArray() ;
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        ImageIO.write(image, "png", baos);
 
-            System.out.println(page.pageNumber + " : " + page.percentColor);
-            Ebean.save(page);
+                        ParsedPDFPage page = new ParsedPDFPage();
+                        page.sessionId = session.sessionId;
+                        page.date = System.currentTimeMillis();
+                        page.pageNumber = finalI;
+                        page.percentColor = percentColor;
+                        page.imageBlob = baos.toByteArray();
+
+                        Ebean.save(page);
+                    } catch (Exception ignored) {
+                        //DB Entry will be missing, as if I had any in this iteration anyway
+                    } finally {
+                        System.out.println("Thread" + finalI + "Completed");
+                        latch.countDown();
+                    }
+
+                }
+            });
         }
+        try {
+            latch.await(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+        }
+        session.isComplete = true;
+        session.endDate = System.currentTimeMillis();
+        Ebean.save(session);
     }
 
     private int colorPercentCounter(BufferedImage image) {
@@ -99,21 +136,23 @@ public class PDFManager {
         return 100 * count / (width * height);
     }
 
-    public List<PageInformation> pageInformation (String pdfSessionId, int pageNumber) {
-        List<ParsedPDFPage> parsedPages = Ebean.createQuery(ParsedPDFPage.class)
-                .orderBy("pageNumber ASC")
+    public String getPageInformation(String pdfSessionId, int pageNumber) {
+        ParsedPDFPage page = Ebean.createQuery(ParsedPDFPage.class)
                 .where()
                 .eq("sessionId", pdfSessionId)
-                .findList();
-        List<PageInformation> pageInformationList = new ArrayList<>(parsedPages.size());
-        for (ParsedPDFPage page: parsedPages){
-            PageInformation pageInfo = new PageInformation();
-            pageInfo.pageNumber = page.pageNumber;
-            pageInfo.percentColor = page.percentColor;
-            pageInfo.imageblob = page.imageBlob;
-            pageInformationList.add(pageInfo);
-        }
-        return pageInformationList;
+                .eq("pageNumber", pageNumber)
+                .findUnique();
+         return (page == null) ? null: page.percentColor.toString();
+    }
+
+    public byte[] getPageImage(String pdfSessionId, int pageNumber) {
+        ParsedPDFPage page = Ebean.createQuery(ParsedPDFPage.class)
+                .where()
+                .eq("sessionId", pdfSessionId)
+                .eq("pageNumber", pageNumber)
+                .findUnique();
+
+        return (page == null) ? null : page.imageBlob;
     }
 
     public PDFSessionStatus getStatus(String pdfSessionID) {
@@ -136,6 +175,19 @@ public class PDFManager {
             status.competedPages.add(page.pageNumber);
         }
         return status;
+    }
+
+    public List<ThumbnailPageInformation> thumbnailPageInformation (String pdfSessionId) {
+        List<ParsedPDFPage> parsedPages= Ebean.createQuery(ParsedPDFPage.class)
+                .orderBy("pageNumber ASC")
+                .where()
+                .eq("sessionId", pdfSessionId)
+                .findList();
+        List<ThumbnailPageInformation> thumbnailList = new ArrayList<>(parsedPages.size());
+        for (ParsedPDFPage page : parsedPages){
+
+        }
+        return null;
     }
 }
 

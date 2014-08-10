@@ -22,4 +22,7 @@ public class ParsedPDFPage extends Model {
 
     @Lob
     public byte[] imageBlob;
+
+    @Lob
+    public byte[] thumbnailBlob;
 }

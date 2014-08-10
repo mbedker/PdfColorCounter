@@ -9,7 +9,7 @@ import javax.persistence.Id;
 public class PDFSession extends Model {
 
     @Id
-    public String id;
+    public String sessionId;
 
     public long startDate;
 

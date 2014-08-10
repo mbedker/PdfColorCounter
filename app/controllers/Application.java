@@ -40,13 +40,37 @@ public class Application extends Controller {
     }
 
     public static Result pageInformation(String pdfSessionId, String pageNumberString) {
-        int pageNumber = Integer.parseInt(pageNumberString);
-        List<PageInformation> pageInformation = PDFManager.get().pageInformation(pdfSessionId, pageNumber);
+        int pageNumber;
+        try {
+            pageNumber = Integer.parseInt(pageNumberString);
+        } catch(NumberFormatException e) {
+            return badRequest("Page number not an integer.");
+        }
+        String pageInformation = PDFManager.get().getPageInformation(pdfSessionId, pageNumber);
+        if(pageInformation == null)
+        {
+            return badRequest("That page does not exist or is not done parsing");
+        }
         return ok(Json.toJson(pageInformation));
     }
 
     public static Result status (String pdfSessionID) {
         PDFSessionStatus status = PDFManager.get().getStatus(pdfSessionID);
         return ok(Json.toJson(status));
+    }
+
+    public static Result pageImage(String pdfSessionID, String pageNumberString) {
+        int pageNumber;
+        try {
+            pageNumber = Integer.parseInt(pageNumberString);
+        } catch(NumberFormatException e) {
+            return badRequest("Page number not an integer.");
+        }
+
+        byte[] pageImage = PDFManager.get().getPageImage(pdfSessionID, pageNumber);
+        if(pageImage == null){
+            return badRequest("That page does not exist or is not done parsing");
+        }
+        return ok(pageImage).as("image/png");
     }
 }
