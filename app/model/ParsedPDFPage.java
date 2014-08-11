@@ -20,6 +20,10 @@ public class ParsedPDFPage extends Model {
 
     public Integer percentColor;
 
+    public boolean toBeReviewed;
+
+    public boolean exceedsThreshold;
+
     @Lob
     public byte[] imageBlob;
 

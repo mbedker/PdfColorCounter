@@ -1,10 +1,19 @@
 @(message: String)
 
 @main("Welcome to Play") {
+        <T> Please Hire Matt Bedker as a Java Developer</T>
+        <h1>Welcome to my attempt at getting a job</h1>
 
     @helper.form(action = routes.Application.countPDF(), 'enctype -> "multipart/form-data") {
-
+        <p>Please select a .pdf file you would like to parse</p>
         <input type="file" name="pdfFile">
+        <BR />
+        <p>Please select the minimum color percentage you would like to review manually</p>
+        <input class = "reviewThreshold" type="int" name="reviewThreshold">
+        <p>Please select the minimum color percentage you would like to automatically print in color</p>
+        <input class = "autoColor" type="int" name ="autoColor">
+        <p>Check to filter out pages with color background</p>
+        <input type="checkbox" name = "filterBackgroundColor">
         <BR />
         <input type="submit">
 

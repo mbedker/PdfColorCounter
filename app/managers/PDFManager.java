@@ -7,6 +7,7 @@ import org.icepdf.core.exceptions.PDFException;
 import org.icepdf.core.exceptions.PDFSecurityException;
 import org.icepdf.core.pobjects.*;
 import org.icepdf.core.util.GraphicsRenderingHints;
+import play.mvc.Http;
 import util.ColorUtil;
 
 import javax.imageio.ImageIO;
@@ -48,7 +49,6 @@ public class PDFManager {
         final PDFSession session = new PDFSession();
         session.startDate = System.currentTimeMillis();
         session.numberOfPages = document.getNumberOfPages();
-        startParsingPdf(session, document);
         Ebean.save(session);
 
         mDocumentExecutor.execute(new Runnable() {
@@ -101,7 +101,7 @@ public class PDFManager {
 
                         Ebean.save(page);
                     } catch (Exception ignored) {
-                        //DB Entry will be missing, as if I had any in this iteration anyway
+                        //Database entry will be missing and signify an error
                     } finally {
                         System.out.println("Thread" + finalI + "Completed");
                         latch.countDown();
@@ -142,7 +142,7 @@ public class PDFManager {
                 .eq("sessionId", pdfSessionId)
                 .eq("pageNumber", pageNumber)
                 .findUnique();
-         return (page == null) ? null: page.percentColor.toString();
+        return (page == null) ? null: "Page " + page.pageNumber + " is " + page.percentColor.toString() + " percent color";
     }
 
     public byte[] getPageImage(String pdfSessionId, int pageNumber) {
@@ -164,7 +164,7 @@ public class PDFManager {
         List<ParsedPDFPage> parsedPDFPages = Ebean.createQuery(ParsedPDFPage.class)
                 .orderBy("pageNumber ASC")
                 .where()
-                .eq("sessionID", pdfSessionID)
+                .eq("sessionId", pdfSessionID)
                 .findList();
 
         PDFSessionStatus  status= new PDFSessionStatus();

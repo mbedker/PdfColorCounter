@@ -5,6 +5,7 @@ import model.PDFSession;
 import model.PDFSessionStatus;
 import model.PageInformation;
 import play.libs.Json;
+import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -22,7 +23,9 @@ public class Application extends Controller {
 
     public static Result countPDF()  {
         Http.MultipartFormData body = request().body().asMultipartFormData();
+;
         Http.MultipartFormData.FilePart pdfFilePart = body.getFile("pdfFile");
+;
         if (pdfFilePart != null) {
             System.out.println("The parsing has begun");
             File pdfFile = pdfFilePart.getFile();

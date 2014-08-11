@@ -19,4 +19,7 @@ public class PDFSession extends Model {
 
     public boolean isComplete;
 
+    public int reviewThreshold;
+
+    public int autoColorThreshold;
 }
