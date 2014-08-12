@@ -64,7 +64,7 @@ public class PDFManager {
 
     private void startParsingPdf(final PDFSession session, final Document document) {
         int pageNum = session.numberOfPages;
-        ExecutorService mPageExecutor = Executors.newFixedThreadPool(
+        ExecutorService pageExecutor = Executors.newFixedThreadPool(
                 Runtime.getRuntime().availableProcessors() + 1, new ThreadFactory() {
                     private AtomicInteger counter = new AtomicInteger(0);
 
@@ -78,7 +78,7 @@ public class PDFManager {
 
         for (int i = 0; i < pageNum; i++) {
             final int finalI = i + 1;
-            mPageExecutor.execute(new Runnable() {
+            pageExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -108,16 +108,18 @@ public class PDFManager {
                 }
             });
         }
+        pageExecutor.shutdown();
         try {
-            mPageExecutor.awaitTermination(5, TimeUnit.MINUTES);
+            pageExecutor.awaitTermination(5, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
-            System.out.println("There was an error parsing your PDF");
+            e.printStackTrace();
+        }
+        if(!pageExecutor.isShutdown()){
+            pageExecutor.shutdownNow();
         }
         session.isComplete = true;
         session.endDate = System.currentTimeMillis();
         Ebean.save(session);
-        mPageExecutor.shutdown();
-
     }
 
     private int colorPercentCounter(BufferedImage image) {
