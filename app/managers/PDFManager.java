@@ -7,6 +7,7 @@ import org.icepdf.core.exceptions.PDFException;
 import org.icepdf.core.exceptions.PDFSecurityException;
 import org.icepdf.core.pobjects.*;
 import org.icepdf.core.util.GraphicsRenderingHints;
+import org.joda.time.Minutes;
 import play.mvc.Http;
 import util.ColorUtil;
 
@@ -63,8 +64,6 @@ public class PDFManager {
 
     private void startParsingPdf(final PDFSession session, final Document document) {
         int pageNum = session.numberOfPages;
-        final CountDownLatch latch = new CountDownLatch(pageNum);
-
         ExecutorService mPageExecutor = Executors.newFixedThreadPool(
                 Runtime.getRuntime().availableProcessors() + 1, new ThreadFactory() {
                     private AtomicInteger counter = new AtomicInteger(0);
@@ -104,19 +103,21 @@ public class PDFManager {
                         //Database entry will be missing and signify an error
                     } finally {
                         System.out.println("Thread" + finalI + "Completed");
-                        latch.countDown();
                     }
 
                 }
             });
         }
         try {
-            latch.await(5, TimeUnit.SECONDS);
+            mPageExecutor.awaitTermination(5, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
+            System.out.println("There was an error parsing your PDF");
         }
         session.isComplete = true;
         session.endDate = System.currentTimeMillis();
         Ebean.save(session);
+        mPageExecutor.shutdown();
+
     }
 
     private int colorPercentCounter(BufferedImage image) {
