@@ -11,6 +11,7 @@ create table pdfsession (
   is_complete               boolean,
   review_threshold          integer,
   auto_color_threshold      integer,
+  filter_background_color   boolean,
   constraint pk_pdfsession primary key (session_id))
 ;
 
@@ -21,7 +22,8 @@ create table parsed_pdfpage (
   page_number               integer,
   percent_color             integer,
   to_be_reviewed            boolean,
-  exceeds_threshold         boolean,
+  print_color               boolean,
+  print_black_and_white     boolean,
   image_blob                blob,
   thumbnail_blob            blob,
   constraint pk_parsed_pdfpage primary key (id))

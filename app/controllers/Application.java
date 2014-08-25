@@ -1,11 +1,8 @@
 package controllers;
 
 import managers.PDFManager;
-import model.PDFSession;
-import model.PDFSessionStatus;
-import model.PageInformation;
+import model.*;
 import play.libs.Json;
-import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -13,7 +10,6 @@ import views.html.index;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 public class Application extends Controller {
 
@@ -21,11 +17,11 @@ public class Application extends Controller {
         return ok(index.render("Test"));
     }
 
-    public static Result countPDF()  {
+    public static Result countPDF() {
         Http.MultipartFormData body = request().body().asMultipartFormData();
-;
+        ;
         Http.MultipartFormData.FilePart pdfFilePart = body.getFile("pdfFile");
-;
+        ;
         if (pdfFilePart != null) {
             System.out.println("The parsing has begun");
             File pdfFile = pdfFilePart.getFile();
@@ -42,38 +38,68 @@ public class Application extends Controller {
         }
     }
 
+    public static Result status(String pdfSessionID) {
+        PDFSessionStatus status = PDFManager.get().getStatus(pdfSessionID);
+        return ok(Json.toJson(status));
+    }
+
+    public static Result autoColorSet(String pdfSessionID) {
+        AutoColorSet set = PDFManager.get().getColorSet(pdfSessionID);
+        return ok(Json.toJson(set));
+    }
+
+    public static Result blackAndWhiteSet(String pdfSessionID) {
+        BlackAndWhiteSet set = PDFManager.get().getBlackAndWhiteSet(pdfSessionID);
+        return ok(Json.toJson(set));
+    }
+
+    public static Result reviewSet(String pdfSessionID) {
+        ReviewSet set = PDFManager.get().getReviewSet(pdfSessionID);
+        return ok(Json.toJson(set));
+    }
+
+
     public static Result pageInformation(String pdfSessionId, String pageNumberString) {
         int pageNumber;
         try {
             pageNumber = Integer.parseInt(pageNumberString);
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return badRequest("Page number not an integer.");
         }
         String pageInformation = PDFManager.get().getPageInformation(pdfSessionId, pageNumber);
-        if(pageInformation == null)
-        {
+        if (pageInformation == null) {
             return badRequest("That page does not exist or is not done parsing");
         }
         return ok(Json.toJson(pageInformation));
-    }
-
-    public static Result status (String pdfSessionID) {
-        PDFSessionStatus status = PDFManager.get().getStatus(pdfSessionID);
-        return ok(Json.toJson(status));
     }
 
     public static Result pageImage(String pdfSessionID, String pageNumberString) {
         int pageNumber;
         try {
             pageNumber = Integer.parseInt(pageNumberString);
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return badRequest("Page number not an integer.");
         }
 
         byte[] pageImage = PDFManager.get().getPageImage(pdfSessionID, pageNumber);
-        if(pageImage == null){
+        if (pageImage == null) {
             return badRequest("That page does not exist or is not done parsing");
         }
         return ok(pageImage).as("image/png");
+    }
+
+    public static Result pageThumbnail(String pdfSessionID, String pageNumberString) {
+        int pageNumber;
+        try {
+            pageNumber = Integer.parseInt(pageNumberString);
+        } catch (NumberFormatException e) {
+            return badRequest("Page number not an integer.");
+        }
+
+        byte[] pageImage = PDFManager.get().getPageThumbnail(pdfSessionID, pageNumber);
+            if (pageImage == null) {
+                return badRequest("That page does not exist or is not done parsing");
+            }
+            return ok(pageImage).as("image/png");
     }
 }

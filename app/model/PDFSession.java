@@ -22,4 +22,6 @@ public class PDFSession extends Model {
     public int reviewThreshold;
 
     public int autoColorThreshold;
+
+    public boolean filterBackgroundColor;
 }

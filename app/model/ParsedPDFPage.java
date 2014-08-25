@@ -22,7 +22,9 @@ public class ParsedPDFPage extends Model {
 
     public boolean toBeReviewed;
 
-    public boolean exceedsThreshold;
+    public boolean printColor;
+
+    public boolean printBlackAndWhite;
 
     @Lob
     public byte[] imageBlob;
