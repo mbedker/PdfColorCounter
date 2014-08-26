@@ -9,9 +9,6 @@ GET         /                                                   controllers.Appl
 POST       /pdf/start                                          controllers.Application.countPDF()
 GET        /pdf/page/:pdfSessionId/:pageNumber                 controllers.Application.pageInformation(pdfSessionId, pageNumber)
 GET        /pdf/status/:pdfSessionId                           controllers.Application.status(pdfSessionId)
-GET        /pdf/color/:pdfSessionId                            controllers.Application.autoColorSet(pdfSessionId)
-GET        /pdf/review/:pdfSessionId                           controllers.Application.reviewSet(pdfSessionId)
-GET        /pdf/bw/:pdfSessionId                               controllers.Application.blackAndWhiteSet(pdfSessionId)
 GET        /pdf/image/:pdfSessionId/:pageNumber                controllers.Application.pageImage(pdfSessionId, pageNumber)
 GET        /pdf/thumbnail/:pdfSessionId/:pageNumber            controllers.Application.pageThumbnail(pdfSessionId, pageNumber)
 

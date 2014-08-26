@@ -44,26 +44,16 @@ public class PDFManager {
             e.printStackTrace();
         }
 
-        Integer reviewThresholdInput = 50;
-        //TODO add javascript to set this value; probably try block
-
-        final Integer autoColorThresholdInput = 80;
-        //TODO add javascript to set this value
-
-        Boolean filterBackgroundColorInput = false;
-        //TODO add javascript to set this value
-
         final PDFSession session = new PDFSession();
         session.startDate = System.currentTimeMillis();
         session.numberOfPages = document.getNumberOfPages();
-        session.autoColorThreshold = autoColorThresholdInput;
-        session.reviewThreshold = reviewThresholdInput;
+
         Ebean.save(session);
 
         mDocumentExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                startParsingPdf(session, document, reviewThresholdInput, autoColorThresholdInput, filterBackgroundColorInput );
+                startParsingPdf(session, document);
             }
         });
 
@@ -71,11 +61,9 @@ public class PDFManager {
     }
 
 
-    private void startParsingPdf(final PDFSession session, final Document document, Integer reviewThreshold, Integer autoColorThreshold, Boolean filterBackgroundColor) {
+    private void startParsingPdf(final PDFSession session, final Document document) {
         int pageNum = session.numberOfPages;
-        reviewThreshold = session.reviewThreshold;
-        autoColorThreshold = session.autoColorThreshold;
-        filterBackgroundColor = session.filterBackgroundColor;
+
 
         ExecutorService pageExecutor = Executors.newFixedThreadPool(
                 Runtime.getRuntime().availableProcessors() + 1, new ThreadFactory() {
@@ -99,7 +87,7 @@ public class PDFManager {
                         BufferedImage image = (BufferedImage) document.getPageImage(finalI - 1, GraphicsRenderingHints.SCREEN,
                                 Page.BOUNDARY_CROPBOX, 0f, 1f);
 
-                        int percentColor = calculatePercentColor(image, session.filterBackgroundColor);
+                        int percentColor = calculatePercentColor(image);
 
                         BufferedImage thumbailImage = createThumbnail(image);
 
@@ -116,13 +104,6 @@ public class PDFManager {
                         page.percentColor = percentColor;
                         page.imageBlob = baos.toByteArray();
                         page.thumbnailBlob = baos2.toByteArray();
-                        if (page.percentColor >= session.autoColorThreshold){
-                            page.printColor = true;
-                        } else if (page.percentColor >= session.reviewThreshold) {
-                            page.toBeReviewed = true;
-                        } else {
-                            page.printBlackAndWhite = true;
-                        }
 
                         Ebean.save(page);
                     } catch (IOException e) {
@@ -153,13 +134,9 @@ public class PDFManager {
     }
 
 
-    private int calculatePercentColor(BufferedImage image, Boolean filterBackgroud) {
+    private int calculatePercentColor(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
-        if (filterBackgroud) {
-            //TODO add algorithim
-        }
-
         int count = 0;
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
@@ -214,91 +191,18 @@ public class PDFManager {
                 .eq("sessionId", pdfSessionID)
                 .findList();
 
-        PDFSessionStatus status = new PDFSessionStatus();
-        status.sessionId = pdfSessionID;
-        status.competedPages = new ArrayList<Integer>(parsedPDFPages.size());
+        ArrayList<PageInformation> completedPages = new ArrayList<PageInformation>(parsedPDFPages.size());
 
         for (ParsedPDFPage page : parsedPDFPages) {
-            status.competedPages.add(page.pageNumber);
+            PageInformation pageInfo = new PageInformation();
+            pageInfo.pageNumber = page.pageNumber;
+            pageInfo.percentColor = page.percentColor;
+
+            completedPages.add(pageInfo);
         }
+        PDFSessionStatus status = new PDFSessionStatus(pdfSessionID, completedPages);
         return status;
     }
-
-    public AutoColorSet getColorSet(String pdfSessionID) {
-
-        PDFSession session = Ebean.find(PDFSession.class, pdfSessionID);
-
-        if (session == null)
-            return null;
-
-        List<ParsedPDFPage> autoColorPages = Ebean.createQuery(ParsedPDFPage.class)
-                .orderBy("pageNumber ASC")
-                .where()
-                .eq("sessionId", pdfSessionID)
-                .eq("printColor", true)
-                .findList();
-
-        AutoColorSet autoColorSet = new AutoColorSet();
-        autoColorSet.sessionId = pdfSessionID;
-        autoColorSet.autoColorSet = new ArrayList<Integer>(autoColorPages.size());
-
-        for (ParsedPDFPage page : autoColorPages ) {
-            autoColorSet.autoColorSet.add(page.pageNumber);
-        }
-
-        return autoColorSet ;
-    }
-
-    public ReviewSet getReviewSet(String pdfSessionID) {
-
-        PDFSession session = Ebean.find(PDFSession.class, pdfSessionID);
-
-        if (session == null)
-            return null;
-
-        List<ParsedPDFPage> pagesForReview = Ebean.createQuery(ParsedPDFPage.class)
-                .orderBy("pageNumber ASC")
-                .where()
-                .eq("sessionId", pdfSessionID)
-                .eq("toBeReviewed", true)
-                .findList();
-
-        ReviewSet reviewSet = new ReviewSet();
-        reviewSet.sessionId = pdfSessionID;
-        reviewSet.pagesForManualReview = new ArrayList<Integer>(pagesForReview.size());
-
-        for (ParsedPDFPage page : pagesForReview ) {
-            reviewSet.pagesForManualReview.add(page.pageNumber);
-        }
-
-        return reviewSet ;
-    }
-
-    public BlackAndWhiteSet getBlackAndWhiteSet(String pdfSessionID) {
-
-        PDFSession session = Ebean.find(PDFSession.class, pdfSessionID);
-
-        if (session == null)
-            return null;
-
-        List<ParsedPDFPage> printBWpages = Ebean.createQuery(ParsedPDFPage.class)
-                .orderBy("pageNumber ASC")
-                .where()
-                .eq("sessionId", pdfSessionID)
-                .eq("printBlackAndWhite", true)
-                .findList();
-
-        BlackAndWhiteSet blackAndWhiteSet = new BlackAndWhiteSet();
-        blackAndWhiteSet.sessionId = pdfSessionID;
-        blackAndWhiteSet.BWpages = new ArrayList<Integer>(printBWpages.size());
-
-        for (ParsedPDFPage page : printBWpages) {
-            blackAndWhiteSet.BWpages.add(page.pageNumber);
-        }
-
-        return blackAndWhiteSet;
-    }
-
 
     public String getPageInformation(String pdfSessionId, int pageNumber) {
         ParsedPDFPage page = Ebean.createQuery(ParsedPDFPage.class)

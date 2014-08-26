@@ -43,22 +43,6 @@ public class Application extends Controller {
         return ok(Json.toJson(status));
     }
 
-    public static Result autoColorSet(String pdfSessionID) {
-        AutoColorSet set = PDFManager.get().getColorSet(pdfSessionID);
-        return ok(Json.toJson(set));
-    }
-
-    public static Result blackAndWhiteSet(String pdfSessionID) {
-        BlackAndWhiteSet set = PDFManager.get().getBlackAndWhiteSet(pdfSessionID);
-        return ok(Json.toJson(set));
-    }
-
-    public static Result reviewSet(String pdfSessionID) {
-        ReviewSet set = PDFManager.get().getReviewSet(pdfSessionID);
-        return ok(Json.toJson(set));
-    }
-
-
     public static Result pageInformation(String pdfSessionId, String pageNumberString) {
         int pageNumber;
         try {
