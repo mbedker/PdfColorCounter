@@ -14,7 +14,7 @@ import java.io.IOException;
 public class Application extends Controller {
 
     public static Result index() {
-        return ok(index.render("Test"));
+        return ok(index.render("test"));
     }
 
     public static Result countPDF() {

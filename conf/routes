@@ -3,7 +3,8 @@
 # ~~~~
 
 # Home page
-GET         /                                                   controllers.Application.index()
+GET         /                                                  controllers.Assets.at(path="/public", file="/index.html")
+#GET         /                                                  controllers.Application.index()
 
 #PDF Endpoints
 POST       /pdf/start                                          controllers.Application.countPDF()
@@ -14,4 +15,4 @@ GET        /pdf/thumbnail/:pdfSessionId/:pageNumber            controllers.Appli
 
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                                       controllers.Assets.at(path="/public", file)
+GET         /assets/*file                                      controllers.Assets.at(path="/public", file)
