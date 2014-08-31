@@ -1,16 +1,17 @@
-'use strict';
+var phonecatControllers = angular.module('phonecatControllers', []);
 
-/* Controllers */
+phonecatControllers.controller('PhoneListCtrl', ['$scope', 'Phone', function($scope, Phone) {
+    $scope.phones = Phone.query();
+    $scope.orderProp = 'age';
+  }]);
 
-var phonecatApp = angular.module('phonecatApp', []);
-
-phonecatApp.controller('PhoneListCtrl', function($scope) {
-  $scope.phones = [
-    {'name': 'Nexus S',
-     'snippet': 'Fast just got faster with Nexus S.'},
-    {'name': 'Motorola XOOM™ with Wi-Fi',
-     'snippet': 'The Next, Next Generation tablet.'},
-    {'name': 'MOTOROLA XOOM™',
-     'snippet': 'The Next, Next Generation tablet.'}
-  ];
-});
+phonecatControllers.controller('PhoneDetailCtrl', ['$scope', '$routeParams', '$http',
+    function($scope, $routeParams, $http) {
+        $http.get('assets/phones/' + $routeParams.phoneId + '.json').success(function(data) {
+        $scope.phone = data;
+        $scope.mainImageUrl = data.images[0];
+        });
+        $scope.setImage = function(imageUrl) {
+            $scope.mainImageUrl = imageUrl;
+            }
+    }]);

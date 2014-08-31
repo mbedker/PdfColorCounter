@@ -1,29 +1,32 @@
 <!DOCTYPE html>
-<html lang = "en" ng-app = "phonecatApp">
+<html lang = "en" ng-app = "phonecatApp" ng-controller="PhoneListCtrl">
 
     <head>
         <meta charset="utf-8">
-        <title>Google Phone Gallery</title>
+        <title ng-bind-template="title: {{query}}"></title>
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.23/angular.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.23/angular-animate.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.23/angular-route.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.23/angular-resource.min.js"></script>
+
         <script src="assets/js/controllers.js"></script>
+        <script src = "assets/js/app.js"><</script>
+        <script src="assets/js/filters.js"></script>
+        <script src="assets/js/services.js"></script>
 
         <link href='http://getbootstrap.com/dist/css/bootstrap.css' rel='stylesheet' type='text/css'>
         <link rel="stylesheet" href="assets/css/app.css">
 
     </head>
 
-    <body ng-controller = "PhoneListCtrl">
-        <ul>
-            <li ng-repeat = "phone in phones">
-                {{phone.name}}
-                <p>{{phone.snippet}}</p>
-            </li>
-        </ul>
+    <body>
+
+        <div ng-view></div>
+
+
     </body>
+
 
 </html>

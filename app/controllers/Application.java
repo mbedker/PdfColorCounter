@@ -1,5 +1,5 @@
 package controllers;
-
+// play debug : ./activator -jvm-debug <port> ~run
 import managers.PDFManager;
 import model.*;
 import play.libs.Json;
