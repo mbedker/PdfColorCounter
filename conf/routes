@@ -3,8 +3,8 @@
 # ~~~~
 
 # Home page
-#GET         /                                                   controllers.Application.at(path="/app/views", file="/index.html")
-GET         /                                                  controllers.Application.index()
+GET         /                                                   controllers.Assets.at(path="/public", file="/index.html")
+#GET         /                                                  controllers.Application.index()
 
 #PDF Endpoints
 POST       /pdf/start                                          controllers.Application.countPDF()
