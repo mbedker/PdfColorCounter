@@ -1,0 +1,8 @@
+#buttonpage {
+    position: absolute;
+    width: 50%;
+    margin: 0 auto;
+    align: center;
+    border: 1px solid black;
+}
+

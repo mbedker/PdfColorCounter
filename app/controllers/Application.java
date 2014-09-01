@@ -6,16 +6,12 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
-import views.html.index;
 
 import java.io.File;
 import java.io.IOException;
 
 public class Application extends Controller {
 
-    public static Result index() {
-        return ok(index.render("test"));
-    }
 
     public static Result countPDF() {
         Http.MultipartFormData body = request().body().asMultipartFormData();
