@@ -1,4 +1,5 @@
-<div id= "buttonpage">
-    <p>Please select a file you would like to analyze</p>
-    <input type="file" name="pdfFile">
+
+<div ng-controller = "SubmitPdfCtrl">
+    <input type="file" file-model="myFile"/>
+    <button ng-click="uploadFile()">upload me</button>
 </div>

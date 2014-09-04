@@ -2,7 +2,8 @@ var phonecatApp = angular.module('phonecatApp', [
     'ngRoute',
     'phonecatControllers',
     'phonecatFilters',
-    'phonecatServices'
+    'phonecatServices',
+    'phonecatDirectives'
 ]);
 
 phonecatApp.config(['$routeProvider',
@@ -10,7 +11,7 @@ phonecatApp.config(['$routeProvider',
         $routeProvider.
         when('/start', {
             templateUrl: '/assets/partials/submitPdf.html',
-            controller: 'PhoneListCtrl'
+            controller: 'SubmitPdfCtrl'
         }).
         when('/phones/:phoneId', {
             templateUrl: '/assets/partials/phone-detail.html',

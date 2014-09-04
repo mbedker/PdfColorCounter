@@ -28,6 +28,7 @@ public class Application extends Controller {
                 e.printStackTrace();
                 return ok("There was an error parsing the PDF");
             }
+            System.out.println(Json.toJson(pdfSession));
             return ok(Json.toJson(pdfSession));
         } else {
             return ok("There was an error with the file you gave me.");

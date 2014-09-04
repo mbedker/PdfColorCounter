@@ -15,15 +15,3 @@ phonecatControllers.controller('PhoneDetailCtrl', ['$scope', '$routeParams', '$h
             $scope.mainImageUrl = imageUrl;
             }
     }]);
-
-phonecatControllers.controller('SubmitPdfCtrl', ['$scope', 'fileUpload', '$http', function($scope, fileUpload){
-
-    $scope.uploadFile = function(){
-        var file = $scope.myFile;
-        console.log('file is ' + JSON.stringify(file));
-        var uploadUrl = "pdf/start";
-        fileUpload.uploadFileToUrl(file, uploadUrl);
-        return
-    };
-
-}]);
