@@ -10,25 +10,32 @@ import play.db.ebean.Model;
 @Entity
 public class ParsedPDFPage extends Model {
     @Id
-    public String id;
 
-    public long date;
+    private final String sessionId;
 
-    public String sessionId;
+    private final int pageNumber;
 
-    public int pageNumber;
-
-    public Integer percentColor;
-
-    public boolean toBeReviewed;
-
-    public boolean printColor;
-
-    public boolean printBlackAndWhite;
+    private final Integer percentColor;
 
     @Lob
-    public byte[] imageBlob;
+    private final byte[] imageBlob;
 
     @Lob
-    public byte[] thumbnailBlob;
+    private final byte[] thumbnailBlob;
+
+    public ParsedPDFPage( String sessionId,
+                         int pageNumber, Integer percentColor, byte[] imageBlob, byte[] thumbnailBlob){
+        this.sessionId = sessionId;
+        this.pageNumber = pageNumber;
+        this.percentColor = percentColor;
+        this.imageBlob = imageBlob;
+        this.thumbnailBlob = thumbnailBlob;
+    }
+
+    public String getSessionId() {return sessionId;}
+    public int getPageNumber() {return pageNumber;}
+    public int getPercentColor() {return percentColor;}
+    public byte[] getImageBlob() {return imageBlob;}
+    public byte[] getThumbnailBlob() {return thumbnailBlob;}
+
 }

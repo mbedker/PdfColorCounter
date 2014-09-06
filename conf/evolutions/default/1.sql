@@ -9,24 +9,16 @@ create table pdfsession (
   end_date                  bigint,
   number_of_pages           integer,
   is_complete               boolean,
-  review_threshold          integer,
-  auto_color_threshold      integer,
-  filter_background_color   boolean,
   constraint pk_pdfsession primary key (session_id))
 ;
 
 create table parsed_pdfpage (
-  id                        varchar(255) not null,
-  date                      bigint,
-  session_id                varchar(255),
+  session_id                varchar(255) not null,
   page_number               integer,
   percent_color             integer,
-  to_be_reviewed            boolean,
-  print_color               boolean,
-  print_black_and_white     boolean,
   image_blob                blob,
   thumbnail_blob            blob,
-  constraint pk_parsed_pdfpage primary key (id))
+  constraint pk_parsed_pdfpage primary key (session_id))
 ;
 
 create sequence pdfsession_seq;

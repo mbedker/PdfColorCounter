@@ -22,8 +22,8 @@ phonecatControllers.controller('SubmitPdfCtrl', ['$scope', 'fileUpload', '$http'
         var file = $scope.myFile;
         console.log('file is ' + JSON.stringify(file));
         var uploadUrl = "pdf/start";
-        fileUpload.uploadFileToUrl(file, uploadUrl);
-        return
+        var data = fileUpload.uploadFileToUrl(file, uploadUrl);
+        return data.sessionId;
     };
 
 }]);

@@ -45,8 +45,8 @@ public class PDFManager {
         }
 
         final PDFSession session = new PDFSession();
-        session.startDate = System.currentTimeMillis();
-        session.numberOfPages = document.getNumberOfPages();
+        session.setStartDate(System.currentTimeMillis());
+        session.setNumberOfPages(document.getNumberOfPages());
 
         Ebean.save(session);
 
@@ -62,7 +62,7 @@ public class PDFManager {
 
 
     private void startParsingPdf(final PDFSession session, final Document document) {
-        int pageNum = session.numberOfPages;
+        int pageNum = session.getNumberOfPages();
 
 
         ExecutorService pageExecutor = Executors.newFixedThreadPool(
@@ -89,21 +89,16 @@ public class PDFManager {
 
                         int percentColor = calculatePercentColor(image);
 
-                        BufferedImage thumbailImage = createThumbnail(image);
+                        BufferedImage thumbnailImage = createThumbnail(image);
 
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         ImageIO.write(image, "png", baos);
 
                         ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-                        ImageIO.write(thumbailImage, "png", baos2);
+                        ImageIO.write(thumbnailImage, "png", baos2);
 
-                        ParsedPDFPage page = new ParsedPDFPage();
-                        page.sessionId = session.sessionId;
-                        page.date = System.currentTimeMillis();
-                        page.pageNumber = finalI;
-                        page.percentColor = percentColor;
-                        page.imageBlob = baos.toByteArray();
-                        page.thumbnailBlob = baos2.toByteArray();
+                        ParsedPDFPage page = new ParsedPDFPage(session.getSessionId(), finalI, percentColor,
+                                baos.toByteArray(), baos2.toByteArray());
 
                         Ebean.save(page);
                     } catch (IOException e) {
@@ -128,8 +123,8 @@ public class PDFManager {
             }
         }
 
-        session.isComplete = true;
-        session.endDate = System.currentTimeMillis();
+        session.setComplete(true);
+        session.setEndDate(System.currentTimeMillis());
         Ebean.save(session);
     }
 
@@ -194,9 +189,7 @@ public class PDFManager {
         ArrayList<PageInformation> completedPages = new ArrayList<PageInformation>(parsedPDFPages.size());
 
         for (ParsedPDFPage page : parsedPDFPages) {
-            PageInformation pageInfo = new PageInformation();
-            pageInfo.pageNumber = page.pageNumber;
-            pageInfo.percentColor = page.percentColor;
+            PageInformation pageInfo = new PageInformation(page.getPageNumber(), page.getPercentColor());
 
             completedPages.add(pageInfo);
         }
@@ -210,7 +203,7 @@ public class PDFManager {
                 .eq("sessionId", pdfSessionId)
                 .eq("pageNumber", pageNumber)
                 .findUnique();
-        return (page == null) ? null : "Page " + page.pageNumber + " is " + page.percentColor.toString() + " percent color";
+        return (page == null) ? null : "Page " + page.getPageNumber() + " is " + (page.getPercentColor()) + " percent color";
     }
 
     public byte[] getPageImage(String pdfSessionId, int pageNumber) {
@@ -220,7 +213,7 @@ public class PDFManager {
                 .eq("pageNumber", pageNumber)
                 .findUnique();
 
-        return (page == null) ? null : page.imageBlob;
+        return (page == null) ? null : page.getImageBlob();
     }
 
     public byte[] getPageThumbnail(String pdfSessionId, int pageNumber) {
@@ -230,6 +223,6 @@ public class PDFManager {
                 .eq("pageNumber", pageNumber)
                 .findUnique();
 
-        return (page == null) ? null : page.thumbnailBlob;
+        return (page == null) ? null : page.getThumbnailBlob();
     }
 }

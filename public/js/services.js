@@ -16,8 +16,11 @@ phonecatServices.service('fileUpload', ['$http', function ($http) {
             headers: {'Content-Type': undefined}
         })
         .success(function(){
+        alert('success')
+        
         })
         .error(function(){
+        alert('error')
         });
     }
 }]);

@@ -9,19 +9,52 @@ import javax.persistence.Id;
 public class PDFSession extends Model {
 
     @Id
-    public String sessionId;
+    private String sessionId;
 
-    public long startDate;
+    private long startDate;
 
-    public Long endDate;
+    private Long endDate;
 
-    public int numberOfPages;
+    private int numberOfPages;
 
-    public boolean isComplete;
+    private boolean isComplete;
 
-    public int reviewThreshold;
+    public PDFSession() {
+    }
 
-    public int autoColorThreshold;
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
+    public String getSessionId(){
+        return sessionId;
+    }
 
-    public boolean filterBackgroundColor;
+    public void setStartDate(long startDate) {
+        this.startDate = startDate;
+    }
+
+    public long getStartDate(){
+        return startDate;
+    }
+    public void setNumberOfPages(int numberOfPages){
+        this.numberOfPages = numberOfPages;
+    }
+    public int getNumberOfPages(){
+        return numberOfPages;
+    }
+
+    public void setEndDate(Long endDate) {
+        this.endDate = endDate;
+    }
+
+    public Long getEndDate() {
+        return endDate;
+    }
+
+    public void setComplete(boolean isComplete) {
+        this.isComplete = isComplete;
+    }
+    public boolean getIsComplete(){
+        return isComplete;
+    }
 }
