@@ -17,6 +17,10 @@ phonecatApp.config(['$routeProvider',
             templateUrl: '/assets/partials/phone-detail.html',
             controller: 'PhoneDetailCtrl'
         }).
+        when('/main', {
+            templateUrl: '/assets/partials/main-view.html',
+            controller: 'MainViewCtrl'
+            }).
         otherwise({
             redirectTo: '/start'
         });
