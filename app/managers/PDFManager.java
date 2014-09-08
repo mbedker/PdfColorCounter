@@ -187,13 +187,17 @@ public class PDFManager {
                 .findList();
 
         ArrayList<PageInformation> completedPages = new ArrayList<PageInformation>(parsedPDFPages.size());
+        PDFSessionStatus status = new PDFSessionStatus();
+        status.setSessionId(pdfSessionID);
 
         for (ParsedPDFPage page : parsedPDFPages) {
             PageInformation pageInfo = new PageInformation(page.getPageNumber(), page.getPercentColor());
 
             completedPages.add(pageInfo);
+        status.setCompletedPages(completedPages);
         }
-        PDFSessionStatus status = new PDFSessionStatus(pdfSessionID, completedPages);
+        status.setIsComplete(session.getIsComplete());
+
         return status;
     }
 

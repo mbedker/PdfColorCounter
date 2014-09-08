@@ -9,8 +9,8 @@ import play.db.ebean.Model;
 
 @Entity
 public class ParsedPDFPage extends Model {
-    @Id
 
+    @Id
     private final String sessionId;
 
     private final int pageNumber;

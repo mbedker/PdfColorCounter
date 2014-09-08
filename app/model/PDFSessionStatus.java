@@ -5,20 +5,28 @@ import java.util.List;
 
 public class PDFSessionStatus {
 
-    private final String sessionId;
+    private String sessionId;
 
-    private final List<PageInformation> completedPages;
+    private List<PageInformation> completedPages;
 
-    public PDFSessionStatus(String sessionId, List<PageInformation> completePages){
+    private boolean isComplete;
+
+    public void setSessionId(String sessionId){
         this.sessionId = sessionId;
-        this.completedPages = completePages;
     }
-
     public String getSessionId() {
         return sessionId;
     }
 
+    public void setCompletedPages(List<PageInformation> completedPages){
+        this.completedPages = completedPages;
+    }
     public List<PageInformation> getCompletedPages() {
         return completedPages;
     }
+
+    public void setIsComplete(boolean isComplete) {
+        this.isComplete = isComplete;
+    }
+    public boolean getIsComplete() {return isComplete;}
 }

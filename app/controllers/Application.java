@@ -15,9 +15,8 @@ public class Application extends Controller {
 
     public static Result countPDF() {
         Http.MultipartFormData body = request().body().asMultipartFormData();
-        ;
         Http.MultipartFormData.FilePart pdfFilePart = body.getFile("pdfFile");
-        ;
+
         if (pdfFilePart != null) {
             System.out.println("The parsing has begun");
             File pdfFile = pdfFilePart.getFile();
