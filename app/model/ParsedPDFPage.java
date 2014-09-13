@@ -11,6 +11,8 @@ import play.db.ebean.Model;
 public class ParsedPDFPage extends Model {
 
     @Id
+    public String id;
+
     private final String sessionId;
 
     private final int pageNumber;
@@ -20,22 +22,16 @@ public class ParsedPDFPage extends Model {
     @Lob
     private final byte[] imageBlob;
 
-    @Lob
-    private final byte[] thumbnailBlob;
-
-    public ParsedPDFPage( String sessionId,
-                         int pageNumber, Integer percentColor, byte[] imageBlob, byte[] thumbnailBlob){
+    public ParsedPDFPage(String sessionId, int pageNumber, Integer percentColor, byte[] imageBlob){
         this.sessionId = sessionId;
         this.pageNumber = pageNumber;
         this.percentColor = percentColor;
         this.imageBlob = imageBlob;
-        this.thumbnailBlob = thumbnailBlob;
     }
 
     public String getSessionId() {return sessionId;}
     public int getPageNumber() {return pageNumber;}
     public int getPercentColor() {return percentColor;}
     public byte[] getImageBlob() {return imageBlob;}
-    public byte[] getThumbnailBlob() {return thumbnailBlob;}
 
 }

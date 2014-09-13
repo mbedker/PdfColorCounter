@@ -1,0 +1,14 @@
+.imageBlock {
+    border: 5px solid #dbdbdb;
+    background-color: #6e6e6e;
+    width: 150px;
+    height: 150px;
+    border radius: 5px;
+    margin: 3px;
+
+}
+
+.image {
+    height: 100px;
+    width: auto;
+}

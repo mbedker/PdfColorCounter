@@ -16,7 +16,7 @@ phonecatControllers.controller('PhoneDetailCtrl', ['$scope', '$routeParams', '$h
             }
     }]);
 
-phonecatControllers.controller('SubmitPdfCtrl', ['$scope', 'fileUpload', '$http', function($scope, fileUpload){
+phonecatControllers.controller('SubmitPdfCtrl', ['$scope', '$location', 'fileUpload', '$http', function($scope, $location, fileUpload){
 
     $scope.uploadFile = function(callback){
         var file = $scope.myFile;
@@ -32,12 +32,13 @@ phonecatControllers.controller('SubmitPdfCtrl', ['$scope', 'fileUpload', '$http'
                 if(window.sessionStorage) {
                 window.sessionStorage.setItem("uploadResult", d);
                 }
+            $location.path ('/main');
             }
         });
     };
 }]);
 
-phonecatControllers.controller('MainViewCtrl', ['scope', 'getStatus', '$http', function($scope, getStatus, $http) {
+phonecatControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$http', function($scope, getStatus, $http) {
     $scope.getPdfStatus = function(result, callback){
         getStatus.getPdfStatus(result, callback);
     };
@@ -63,7 +64,7 @@ phonecatControllers.controller('MainViewCtrl', ['scope', 'getStatus', '$http', f
 
                             var tr = $('<tr />');
                             var td = $('<td />');
-                            var img = $('<img scr = "/pdf/thumbnail/' + data.sessionId + '/' + pg.pageNumber + '" />');
+                            var img = $('<img src = "/pdf/thumbnail/' + data.sessionId + '/' + pg.pageNumber + '" />');
                             td.append(img);
                             tr.append(td);
                             tbody.append(tr);
@@ -74,11 +75,11 @@ phonecatControllers.controller('MainViewCtrl', ['scope', 'getStatus', '$http', f
                     }
                 }
             });
-        }, (function(i){
-                if (i < 5000){
-                    i = i + 1000;
-                    }
-                    return i;
-                )(i)});
+        }, (function(i) {
+            if (i < 5000) {
+                i = i + 1000;
+                }
+                return i;
+                }(i)));
     };
 }]);

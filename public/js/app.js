@@ -13,10 +13,6 @@ phonecatApp.config(['$routeProvider',
             templateUrl: '/assets/partials/submitPdf.html',
             controller: 'SubmitPdfCtrl'
         }).
-        when('/phones/:phoneId', {
-            templateUrl: '/assets/partials/phone-detail.html',
-            controller: 'PhoneDetailCtrl'
-        }).
         when('/main', {
             templateUrl: '/assets/partials/main-view.html',
             controller: 'MainViewCtrl'

@@ -33,7 +33,7 @@ phonecatServices.service('getStatus', ['$http', function($http){
         $http.get(url,{
             transformRequest: angular.identity,
             })
-            .success(function(){
+            .success(function(data){
                 if (typeof callback === 'function'){
                     callback(data);
                 }

@@ -21,6 +21,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class PDFManager {
 
+    private static final ThreadFactory MIN_PRIORITY_THREAD_FACTORY = new ThreadFactory() {
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r);
+            t.setPriority(Thread.MIN_PRIORITY);
+            return t;
+        }
+    };
+
     private static final int MAX_GREYSCALE_DIFFERENCE = 5;
 
     private static PDFManager mInstance = null;
@@ -62,29 +71,23 @@ public class PDFManager {
 
 
     private void startParsingPdf(final PDFSession session, final Document document) {
-        int pageNum = session.getNumberOfPages();
-
+        int numOfPages = session.getNumberOfPages();
 
         ExecutorService pageExecutor = Executors.newFixedThreadPool(
-                Runtime.getRuntime().availableProcessors() + 1, new ThreadFactory() {
-                    private AtomicInteger counter = new AtomicInteger(0);
+                Runtime.getRuntime().availableProcessors() + 1, MIN_PRIORITY_THREAD_FACTORY);
 
-                    @Override
-                    public Thread newThread(Runnable r) {
-                        Thread t = new Thread(r, "PDFParseThread-" + counter.incrementAndGet());
-                        t.setPriority(Thread.MIN_PRIORITY);
-                        return t;
-                    }
-                });
-
-        for (int i = 0; i < pageNum; i++) {
-            final int finalI = i + 1;
+        for (int i = 0; i < numOfPages; i++) {
+            final int finalI = i;
+            final int pageNum = i + 1;
             pageExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
+                    String sessionInfoString = "Session: " + session.getSessionId() + " Page: " + pageNum;
+                    System.out.println("Start - " + sessionInfoString);
+
                     try {
-                        System.out.println("Thread" + finalI + "initiated");
-                        BufferedImage image = (BufferedImage) document.getPageImage(finalI - 1, GraphicsRenderingHints.SCREEN,
+                        // the pageNum the docment takes appears to be actually an index.
+                        BufferedImage image = (BufferedImage) document.getPageImage(finalI, GraphicsRenderingHints.SCREEN,
                                 Page.BOUNDARY_CROPBOX, 0f, 1f);
 
                         int percentColor = calculatePercentColor(image);
@@ -94,18 +97,15 @@ public class PDFManager {
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         ImageIO.write(image, "png", baos);
 
-                        ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-                        ImageIO.write(thumbnailImage, "png", baos2);
-
-                        ParsedPDFPage page = new ParsedPDFPage(session.getSessionId(), finalI, percentColor,
-                                baos.toByteArray(), baos2.toByteArray());
+                        ParsedPDFPage page = new ParsedPDFPage(session.getSessionId(), pageNum, percentColor,
+                                baos.toByteArray());
 
                         Ebean.save(page);
                     } catch (IOException e) {
-                        throw new RuntimeException("Error parsing page" + finalI + "(" + e + ")");
-                    } finally {
-                        System.out.println("Thread" + finalI + "Completed");
+                        throw new RuntimeException("Error - " + sessionInfoString, e);
                     }
+
+                    System.out.println("End - " + sessionInfoString);
                 }
             });
         }
@@ -227,6 +227,6 @@ public class PDFManager {
                 .eq("pageNumber", pageNumber)
                 .findUnique();
 
-        return (page == null) ? null : page.getThumbnailBlob();
+        return (page == null) ? null : page.getImageBlob();
     }
 }

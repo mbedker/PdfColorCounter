@@ -6,11 +6,17 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
+import views.html.index;
 
 import java.io.File;
 import java.io.IOException;
 
 public class Application extends Controller {
+
+    //play framework controller
+    public static Result index(){
+        return ok(index.render("Test"));
+    }
 
 
     public static Result countPDF() {
@@ -24,7 +30,7 @@ public class Application extends Controller {
             try {
                 pdfSession = PDFManager.get().parsePDF(pdfFile);
             } catch (IOException e) {
-                e.printStackTrace();
+
                 return ok("There was an error parsing the PDF");
             }
             System.out.println(Json.toJson(pdfSession));

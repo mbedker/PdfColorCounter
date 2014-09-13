@@ -13,12 +13,12 @@ create table pdfsession (
 ;
 
 create table parsed_pdfpage (
-  session_id                varchar(255) not null,
+  id                        varchar(255) not null,
+  session_id                varchar(255),
   page_number               integer,
   percent_color             integer,
   image_blob                blob,
-  thumbnail_blob            blob,
-  constraint pk_parsed_pdfpage primary key (session_id))
+  constraint pk_parsed_pdfpage primary key (id))
 ;
 
 create sequence pdfsession_seq;
