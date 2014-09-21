@@ -48,6 +48,7 @@ phonecatControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$http', 
             filter = [];
         var table = $('#thumbnailsContainer');
         var tbody = table.find('tbody');
+        var displayedPages = [];
         var timer = window.setInterval(function(){
             $this.getPdfStatus(window.uploadResult, function(data){
                 if (data){
@@ -57,23 +58,25 @@ phonecatControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$http', 
                     var pages = data.completedPages.sort(function(a, b){
                      return a.pageNumber > b.pageNumber;
                     });
+                    var trCount = ((pages.length) / 5);
+                    for (i = 1; i < trCount; i++){
+                        var id = "tr" + i;
+                        $('#thumbnail-table tbody').append('<tr id =' + id + '/>');
+                    }
                     for (var idx = 0; idx < pages.length; idx++){
                         var pg = pages[idx];
+                        var trAssign = parseInt((pg.pageNumber / 5) + 1);
+                        var trId = "#tr" + trAssign;
                         if(filter.indexOf(pg.pageNumber) <= -1){
+                            if (displayedPages.indexOf(pg.pageNumber) <= -1){
                             //It doesn't exist in the array
-
-                            var tr = $('<tr />');
-                            var td = $('<td />');
-                            var img = $('<img src = "/pdf/thumbnail/' + data.sessionId + '/' + pg.pageNumber + '" />');
-                            td.append(img);
-                            tr.append(td);
-                            tbody.append(tr);
-                            filter.push(pg.pageNumber);
-                            //This is the end of the logic
+                                $(trId).append($('<td><div class = "img"><img src = "/pdf/thumbnail/' + data.sessionId + '/' + pg.pageNumber + '" /></div></td>'));
+                                displayedPages = displayedPages + pg.pageNumber;
+                            }
+                            }
+                         }   //This is the end of the logic
                         }
                     }
-                    }
-                }
             });
         }, (function(i) {
             if (i < 5000) {
