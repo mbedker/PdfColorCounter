@@ -1,22 +1,6 @@
-var phonecatControllers = angular.module('phonecatControllers', []);
+var colorCounterControllers = angular.module('colorCounterControllers', []);
 
-phonecatControllers.controller('PhoneListCtrl', ['$scope', 'Phone', function($scope, Phone) {
-    $scope.phones = Phone.query();
-    $scope.orderProp = 'age';
-  }]);
-
-phonecatControllers.controller('PhoneDetailCtrl', ['$scope', '$routeParams', '$http',
-    function($scope, $routeParams, $http) {
-        $http.get('assets/phones/' + $routeParams.phoneId + '.json').success(function(data) {
-        $scope.phone = data;
-        $scope.mainImageUrl = data.images[0];
-        });
-        $scope.setImage = function(imageUrl) {
-            $scope.mainImageUrl = imageUrl;
-            }
-    }]);
-
-phonecatControllers.controller('SubmitPdfCtrl', ['$scope', '$location', 'fileUpload', '$http', function($scope, $location, fileUpload){
+colorCounterControllers.controller('SubmitPdfCtrl', ['$scope', '$location', 'fileUpload', '$http', function($scope, $location, fileUpload){
 
     $scope.uploadFile = function(callback){
         var file = $scope.myFile;
@@ -38,17 +22,27 @@ phonecatControllers.controller('SubmitPdfCtrl', ['$scope', '$location', 'fileUpl
     };
 }]);
 
-phonecatControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$http', function($scope, getStatus, $http) {
+colorCounterControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$http', function($scope, getStatus, $http) {
     $scope.getPdfStatus = function(result, callback){
         getStatus.getPdfStatus(result, callback);
     };
     $scope.queryStatus = function(){
-        var i = 1000,
+        var timerInterval = 1000,
             $this = this;
             filter = [];
-        var table = $('#thumbnailsContainer');
+        var table = $('#thumbnail-table');
         var tbody = table.find('tbody');
         var displayedPages = [];
+
+        var containerHtml = '<tr>';
+        for (var pageNumber = 1; pageNumber <= window.uploadResult.numberOfPages; pageNumber++){
+           containerHtml = containerHtml + '<td><div id="page' + pageNumber + '" class = "page-wrapper"></div></td>';
+        }
+        containerHtml = containerHtml + '</tr>';
+        tbody.append(containerHtml);
+        //add wrappers, inject content, when its done parsing
+        //setting width and height of wrapper beforehand to have room for
+        //tbody.
         var timer = window.setInterval(function(){
             $this.getPdfStatus(window.uploadResult, function(data){
                 if (data){
@@ -58,31 +52,23 @@ phonecatControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$http', 
                     var pages = data.completedPages.sort(function(a, b){
                      return a.pageNumber > b.pageNumber;
                     });
-                    var trCount = ((pages.length) / 5);
-                    for (i = 1; i < trCount; i++){
-                        var id = "tr" + i;
-                        $('#thumbnail-table tbody').append('<tr id =' + id + '/>');
-                    }
-                    for (var idx = 0; idx < pages.length; idx++){
-                        var pg = pages[idx];
-                        var trAssign = parseInt((pg.pageNumber / 5) + 1);
-                        var trId = "#tr" + trAssign;
-                        if(filter.indexOf(pg.pageNumber) <= -1){
-                            if (displayedPages.indexOf(pg.pageNumber) <= -1){
-                            //It doesn't exist in the array
-                                $(trId).append($('<td><div class = "img"><img src = "/pdf/thumbnail/' + data.sessionId + '/' + pg.pageNumber + '" /></div></td>'));
-                                displayedPages = displayedPages + pg.pageNumber;
-                            }
-                            }
-                         }   //This is the end of the logic
+
+                    for (var i = 0; i < pages.length; i++) {
+                        var pg = pages[i];
+                        if (filter.indexOf(pg.pageNumber)<=-1) {
+                            var pageContainer = tbody.find('#page'+ pg.pageNumber);
+                            pageContainer.append('<img src = "/pdf/thumbnail/' + data.sessionId + '/' + pg.pageNumber + '"></img><div>' + pg.pageNumber + " : " + pg.percentColor + '</div>');
+                            filter = filter + pg.pageNumber;
                         }
                     }
-            });
-        }, (function(i) {
-            if (i < 5000) {
-                i = i + 1000;
+                }   //This is the end of the logic
+             }
+        });
+        }, (function(timerInterval) {
+            if (timerInterval < 5000) {
+                timerInterval = timerInterval + 1000;
                 }
-                return i;
-                }(i)));
+                return timerInterval;
+                }(timerInterval)));
     };
 }]);

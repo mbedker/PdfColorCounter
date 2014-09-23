@@ -1,12 +1,11 @@
-var phonecatApp = angular.module('phonecatApp', [
+var colorCounterApp = angular.module('colorCounterApp', [
     'ngRoute',
-    'phonecatControllers',
-    'phonecatFilters',
-    'phonecatServices',
-    'phonecatDirectives'
+    'colorCounterControllers',
+    'colorCounterServices',
+    'colorCounterDirectives'
 ]);
 
-phonecatApp.config(['$routeProvider',
+colorCounterApp.config(['$routeProvider',
     function($routeProvider) {
         $routeProvider.
         when('/start', {

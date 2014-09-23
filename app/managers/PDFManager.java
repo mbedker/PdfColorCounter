@@ -92,8 +92,6 @@ public class PDFManager {
 
                         int percentColor = calculatePercentColor(image);
 
-                        BufferedImage thumbnailImage = createThumbnail(image);
-
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         ImageIO.write(image, "png", baos);
 

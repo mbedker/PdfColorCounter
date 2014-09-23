@@ -3,9 +3,30 @@
     padding: 10px;
 }
 
+#thumbnail-table {
+    margin: 0 auto;
+}
 
-.img img {
+#thumbnail-table td {
+    display: inline;
+}
+
+#thumbnail-table td {
+    display: inline-block;
+}
+
+#thumbnail-table  td div {
+    text align center
+}
+
+.page-wrapper {
+    height: 220px;
+    width: 170px;
+}
+
+.page-wrapper img {
     max-width: 100px;
     padding: 15px;
     border: solid black 3px;
 }
+

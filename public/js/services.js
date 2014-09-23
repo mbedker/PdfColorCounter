@@ -1,13 +1,6 @@
-var phonecatServices = angular.module('phonecatServices', ['ngResource']);
+var colorCounterServices = angular.module('colorCounterServices', ['ngResource']);
 
-phonecatServices.factory('Phone', ['$resource',
-    function($resource){
-        return $resource('assets/phones/:phoneId.json', {},{
-        query: {method: 'GET', params:{phoneId: 'phones'}, isArray:true}
-        });
-}]);
-
-phonecatServices.service('fileUpload', ['$http', function ($http) {
+colorCounterServices.service('fileUpload', ['$http', function ($http) {
     this.uploadFileToUrl = function(file, uploadUrl, callback){
         var fd = new FormData();
         fd.append('pdfFile', file);
@@ -26,7 +19,7 @@ phonecatServices.service('fileUpload', ['$http', function ($http) {
     }
 }]);
 
-phonecatServices.service('getStatus', ['$http', function($http){
+colorCounterServices.service('getStatus', ['$http', function($http){
     this.getPdfStatus = function(result, callback) {
         if(result){
         var url = 'pdf/status/' + result.sessionId;

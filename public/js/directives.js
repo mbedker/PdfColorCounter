@@ -1,6 +1,6 @@
-var phonecatAppDirectives = angular.module('phonecatDirectives', [])
+var colorCounterDirectives = angular.module('colorCounterDirectives', [])
 
-phonecatAppDirectives.directive('fileModel', ['$parse', function ($parse) {
+colorCounterDirectives.directive('fileModel', ['$parse', function ($parse) {
     return {
         restrict: 'A',
         link: function(scope, element, attrs) {
