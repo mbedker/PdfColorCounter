@@ -45,24 +45,20 @@ colorCounterControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$htt
         //tbody.
         var timer = window.setInterval(function(){
             $this.getPdfStatus(window.uploadResult, function(data){
-                if (data){
-                    if (data.isCompleted) {
-                window.clearInterval(timer);
-                } else {
-                    var pages = data.completedPages.sort(function(a, b){
-                     return a.pageNumber > b.pageNumber;
-                    });
+                if (data) {
+                    for (var i = 0; i < data.completedPages.length; i++) {
+                        var pg = data.completedPages[i];
 
-                    for (var i = 0; i < pages.length; i++) {
-                        var pg = pages[i];
                         if (filter.indexOf(pg.pageNumber)<=-1) {
+                            console.log('Append: ' + pg.pageNumber);
                             var pageContainer = tbody.find('#page'+ pg.pageNumber);
                             pageContainer.append('<img src = "/pdf/thumbnail/' + data.sessionId + '/' + pg.pageNumber + '"></img><div>' + pg.pageNumber + " : " + pg.percentColor + '</div>');
-                            filter = filter + pg.pageNumber;
+                            filter.push(pg.pageNumber);
                         }
                     }
+                    if (data.isComplete)
+                        window.clearInterval(timer);
                 }   //This is the end of the logic
-             }
         });
         }, (function(timerInterval) {
             if (timerInterval < 5000) {
