@@ -1,4 +1,18 @@
 <div ng-controller = "MainViewCtrl" ng-init="queryStatus();">
+    <div id = "top-bar">
+        <div class="top-bar-content"><p>Click below to add pages</p></div>
+        <div id="bw-print-set" class="top-bar-content"><button>bwprintset</button></div>
+        <div id ="slider-range"></div>
+\
+        <p>
+            <label for="amount">Auto-BW and Auto-Color Thresholds</label>
+            <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
+        </p>
+        <div id="slider-range"></div>
+    </div>
+
+    <div id = "left-bar">
+    </div>
     <table id="thumbnail-table">
         <tbody>
 
@@ -6,3 +20,4 @@
     </table>
 
 </div>
+

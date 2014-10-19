@@ -1,3 +1,17 @@
+#top-bar {
+    height: 200px;
+    width: 100%;
+}
+
+.top-bar-content  {
+    text-align: center;
+}
+
+#left-bar {
+    height: 100%;
+    width: 200px;
+}
+
 .img-contain {
     border: 3px;
     padding: 10px;
@@ -5,6 +19,7 @@
 
 #thumbnail-table {
     margin: 0 auto;
+    clear: top;
 }
 
 #thumbnail-table td {
@@ -15,8 +30,8 @@
     display: inline-block;
 }
 
-#thumbnail-table  td div {
-    text align center
+#thumbnail-table td div {
+    text-align: center;
 }
 
 .page-wrapper {
@@ -24,9 +39,22 @@
     width: 170px;
 }
 
-.page-wrapper img {
-    max-width: 100px;
-    padding: 15px;
-    border: solid black 3px;
+.page-wrapper .selectable img {
+    width: 100px;
+    border: solid black 1px;
+}
+
+.selectable{
+    max-width: 140px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 10px;
+}
+
+.selected {
+    background-color: yellow;
+    -webkit-border-radius: 12px;
+    -moz-border-radius: 12px;
+    border-radius: 12px;
 }
 
