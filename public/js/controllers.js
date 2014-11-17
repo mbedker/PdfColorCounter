@@ -49,6 +49,7 @@ colorCounterControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$htt
         //tbody.
 
         var onSelectPageFunction = function() {
+            //console.log(pg.pageNumber);
             var element = $(this);
             element.toggleClass('selected');
             element.toggleClass('unselected')
@@ -92,42 +93,22 @@ colorCounterControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$htt
                 }(timerInterval)));
     };
 
-        ZeroClipboard.config( {moviePath: 'assets/zeroClipbaord/ZeroClipboard.swf'});
-        var client = new ZeroClipboard($('#bw-print-set'));
 
-        client.on( 'load', function(client) {
-
-          client.on( 'datarequested', function(client, text) {
-            var text = $scope.copyBWPages;
-            client.setText(text);
-            console.log(text);
-          });
-
-          // callback triggered on successful copying
-          client.on( 'complete', function(client, args) {
-            console.log("Text copied to clipboard: \n" + args.text );
-          });
-        });
-
-        // In case of error - such as Flash not being available
-        client.on( 'wrongflash noflash', function() {
-          ZeroClipboard.destroy();
-        } );
-
-
-
-        $scope.copyBWPages = function(){
+    $scope.copyBWPages = function(){
+        console.log('bwPrintSet button pressed');
         var bwPages = [];
-//           var table = $('#thumbnail-table');
-//         var tbody = table.find('tbody');
-            for (i = 0; i < window.pdfSession.numberOfPages; i++){
-                var page = tbody.find('#' + i);
-                if (page.hasClass('unselected')) {
-                    bwPages.push(i);
-                }
+        var table = $('#thumbnail-table');
+        var tbody = table.find('tbody');
+        for (i = 1; i < window.pdfSession.numberOfPages; i++){
+            var page = tbody.find('#' + i);
+            if (page.hasClass('unselected')) {
+                bwPages.push(i);
+            }
         }
         console.log(bwPages);
-        }
+        return(bwPages);
+        //createZCwithPageSet("bw-print-set", bwPages);
+        };
 
         $(function(){
             $("#slider-range").slider({
@@ -172,5 +153,26 @@ colorCounterControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$htt
             $( "#amount" ).val(  $( "#slider-range" ).slider( "values", 0 ) +
                 "% - " + $( "#slider-range" ).slider( "values", 1 ) + "%" );
         });
+
+        var createZCwithPageSet = function($scope, buttonId, pageSet){
+            console.log(success);
+           //     $(document).ready(function() {
+                    var client = new ZeroClipboard($('#' + buttonId), {
+                        moviePath : '/assets/zc/ZeroClipboard.swf'
+                    });
+
+                    client.on( "ready", function( readyEvent ) {
+                        client.setData("text/plain", pageSet);
+                      // alert( "ZeroClipboard SWF is ready!" );
+
+                      client.on( "aftercopy", function( event ) {
+                        // `this` === `client`
+                        // `event.target` === the element that was clicked
+                        event.target.style.display = "none";
+                        alert("Copied text to clipboard: " + event.data["text/plain"] );
+                      } );
+                    } );
+
+                };
 
 }]);
