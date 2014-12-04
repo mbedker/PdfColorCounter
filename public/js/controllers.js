@@ -28,6 +28,10 @@ colorCounterControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$htt
     $scope.getPdfStatus = function(result, callback){
         getStatus.getPdfStatus(result, callback);
     };
+    var selectorToggle = function(item, class1, class2){
+        item.toggleClass(class1);
+        item.toggleClass(class2);
+    }
     $scope.queryStatus = function(){
         var timerInterval = 1000,
             $this = this;
@@ -49,19 +53,14 @@ colorCounterControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$htt
         //tbody.
 
         var onSelectPageFunction = function() {
-            //console.log(pg.pageNumber);
             var element = $(this);
-            element.toggleClass('selected');
-            element.toggleClass('unselected')
-
+            selectorToggle(element, 'selected', 'unselected');
             var pageNum = element.attr('id');
             if (element.hasClass('selected')) {
                 window.selectedPages.push(pageNum);
             } else {
                 window.selectedPages.splice( $.inArray(pageNum, window.selectedPages), 1 );
             }
-
-            console.log(window.selectedPages); // To be removed
         }
 
         var timer = window.setInterval(function(){
@@ -94,85 +93,101 @@ colorCounterControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$htt
     };
 
 
-    $scope.copyBWPages = function(){
-        console.log('bwPrintSet button pressed');
-        var bwPages = [];
-        var table = $('#thumbnail-table');
-        var tbody = table.find('tbody');
-        for (i = 1; i < window.pdfSession.numberOfPages; i++){
-            var page = tbody.find('#' + i);
-            if (page.hasClass('unselected')) {
-                bwPages.push(i);
+      $scope.getCopySets= function(){
+            var bwPages = [];
+            var colorPages = [];
+            var table = $('#thumbnail-table');
+            var tbody = table.find('tbody');
+            for (i = 1; i < window.pdfSession.numberOfPages; i++){
+                var page = tbody.find('#' + i);
+                if (page.hasClass('selectable selected')) {
+                    colorPages.push(i);
+                } else {
+                    bwPages.push(i);
+                }
             }
-        }
-        console.log(bwPages);
-        return(bwPages);
-        //createZCwithPageSet("bw-print-set", bwPages);
+            console.log("bw pages : " + bwPages);
+            console.log("color pages : "  + colorPages);
+            getPrintString(bwPages);
         };
 
-        $(function(){
-            $("#slider-range").slider({
-            range: true,
-            min: 0,
-            max: 100,
-            values: [ 0, 100 ],
-            orientation: 'vertical',
-            slide: function( event, ui ) {
-                $( "#amount" ).val( ui.values[ 0 ] + "% - " + ui.values[ 1 ] + "%" );
-                },
-            change: function (event, ui) {
-                var upperRange = ui.values[1];
-                var lowerRange = ui.values[0];
-                console.log( upperRange + ':' + lowerRange);
-
-                if (!window.pdfStatus)
-                    return;
-
-                //var tbody = $('#thumbnail-table tbody');
-                for (var i = 0; i < window.pdfStatus.completedPages.length; i++) {
-                    var pg = window.pdfStatus.completedPages[i];
-                    var element = tbody.find('#' + pg.pageNumber);
-
-                    if (pg.percentColor > upperRange) {
-                        console.log('hide ' + pg.pageNumber);
-                        element.parent().parent().hide();
-                        window.selectedPages.push(pg.pageNumber);
-                    } else if (pg.percentColor < lowerRange) {
-                        console.log('hide ' + pg.pageNumber);
-                        element.parent().parent().hide();
-                        window.selectedPages.splice( $.inArray(pg.pageNumber, window.selectedPages), 1 );
+        var getPrintString = function(pages){
+            var printString="";
+            for (var i = 0; i < pages.length; i++) {
+                var digit = pages[i];
+                var nextDigit = pages[i + 1];
+                stringEnd = printString.length - 1;
+                var lastChar = printString.charAt(stringEnd);
+                if ((digit + 1) == nextDigit) {
+                    /*The output of this block is to create a string that can be easily copied into a print selected pages window
+                    Example:
+                    var pages = [1, 2, 3, 5, 6, 7, 9, 12, 13, 14, 15, 20];
+                    output = 1-3,5-7,9,12-15,20
+                    */
+                    if (lastChar == "," || printString == "") {
+                        printString = printString + digit + "-";
                     } else {
-                        console.log('show ' + pg.pageNumber);
-                        element.removeClass('selected');
-                        window.selectedPages.splice( $.inArray(pg.pageNumber, window.selectedPages), 1 );
-                        element.parent().parent().show();
+                        printString = printString;
+                    }
+                } else if (i == (pages.length - 1)) {
+                    printString = printString + digit;
+                } else {
+                    if (printString.charAt(lastChar) == "-") {
+                        printString = printString + digit;
+                        //ends a "-" sequence
+                    } else {
+                        printString = printString + digit + ",";
                     }
                 }
             }
-            });
-            $( "#amount" ).val(  $( "#slider-range" ).slider( "values", 0 ) +
-                "% - " + $( "#slider-range" ).slider( "values", 1 ) + "%" );
+        };
+
+    $(function(){
+        $("#slider-range").slider({
+        range: true,
+        min: 0,
+        max: 100,
+        values: [ 0, 100 ],
+        orientation: 'vertical',
+        slide: function( event, ui ) {
+            $( "#amount" ).val( ui.values[ 0 ] + "% - " + ui.values[ 1 ] + "%" );
+            },
+        change: function (event, ui) {
+            var upperRange = ui.values[1];
+            var lowerRange = ui.values[0];
+            console.log( upperRange + ':' + lowerRange);
+
+            if (!window.pdfStatus)
+                return;
+
+            var tbody = $('#thumbnail-table tbody');
+            for (var i = 0; i < window.pdfStatus.completedPages.length; i++) {
+                var pg = window.pdfStatus.completedPages[i];
+                var element = tbody.find('#' + pg.pageNumber);
+
+                if (pg.percentColor > upperRange) {
+                    element.parent().parent().hide();
+                    if(element.hasClass('unselected')){
+                        selectorToggle(element, 'selected', 'unselected');
+                        }
+                    window.selectedPages.push(pg.pageNumber);
+                } else if (pg.percentColor < lowerRange) {
+                    element.parent().parent().hide();
+                    if (element.hasClass('selected')){
+                        selectorToggle(element, 'selected', 'unselected');
+                    }
+                    window.selectedPages.splice( $.inArray(pg.pageNumber, window.selectedPages), 1 );
+                } else {
+                    element.removeClass('selected');
+                    window.selectedPages.splice( $.inArray(pg.pageNumber, window.selectedPages), 1 );
+                    element.parent().parent().show();
+                }
+            }
+        }
+
         });
-
-        var createZCwithPageSet = function($scope, buttonId, pageSet){
-            console.log(success);
-           //     $(document).ready(function() {
-                    var client = new ZeroClipboard($('#' + buttonId), {
-                        moviePath : '/assets/zc/ZeroClipboard.swf'
-                    });
-
-                    client.on( "ready", function( readyEvent ) {
-                        client.setData("text/plain", pageSet);
-                      // alert( "ZeroClipboard SWF is ready!" );
-
-                      client.on( "aftercopy", function( event ) {
-                        // `this` === `client`
-                        // `event.target` === the element that was clicked
-                        event.target.style.display = "none";
-                        alert("Copied text to clipboard: " + event.data["text/plain"] );
-                      } );
-                    } );
-
-                };
+        $( "#amount" ).val(  $( "#slider-range" ).slider( "values", 0 ) +
+            "% - " + $( "#slider-range" ).slider( "values", 1 ) + "%" );
+    });
 
 }]);
