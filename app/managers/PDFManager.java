@@ -46,9 +46,20 @@ public class PDFManager {
     }
 
     public PDFSession parsePDF(final File pdfFile) throws IOException {
+        if (pdfFile == null)
+            throw new IllegalArgumentException("File cannot be null.");
+        if (!pdfFile.exists())
+            throw new IllegalArgumentException("File must exist.");
+
         final Document document = new Document();
         try {
-            document.setFile(pdfFile.getAbsolutePath());
+            String path = pdfFile.getAbsolutePath();
+            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+            System.out.println(path);
+            document.setFile(path);
         } catch (PDFException | PDFSecurityException | IOException e) {
             e.printStackTrace();
         }
@@ -141,36 +152,6 @@ public class PDFManager {
         }
         return 100 * count / (width * height);
     }
-
-    private static final int LARGEST_DIMENSION = 150;
-
-    public static BufferedImage createThumbnail(BufferedImage image) {
-        int imageHeight = image.getHeight();
-        int imageWidth = image.getWidth();
-
-        int finalHeight;
-        int finalWidth;
-        if (imageHeight > imageWidth) {
-            finalHeight = LARGEST_DIMENSION;
-            //double factor = (double) LARGEST_DIMENSION / imageHeight;
-            // finalWidth = (int) factor * imageWidth;
-            //TODO stop this from returning as a zero and breaking the app
-            finalWidth = 116;
-        } else {
-            finalWidth = LARGEST_DIMENSION;
-            //double factor = (double) LARGEST_DIMENSION / imageWidth;
-            //finalHeight = (int)factor * imageHeight;
-            //TODO stop this from returning as zero ad breaking the app
-            finalHeight = 116;
-        }
-
-        Image thumbnailImage = image.getScaledInstance(finalWidth, finalHeight, Image.SCALE_DEFAULT);
-        BufferedImage bufferedThumbnail = new BufferedImage(finalWidth, finalHeight, image.getType());
-        bufferedThumbnail.createGraphics().drawImage(thumbnailImage, 0, 0, null);
-
-        return bufferedThumbnail;
-    }
-
 
     public PDFSessionStatus getStatus(String pdfSessionID) {
         PDFSession session = Ebean.find(PDFSession.class, pdfSessionID);

@@ -1,5 +1,25 @@
 
 <div ng-controller = "SubmitPdfCtrl">
-    <input type="file" file-model="myFile"/>
-    <button ng-click="uploadFile()">upload me</button>
+
+    <div class="content">
+        <div class="instruction">
+            <p><span class="instruction-text">CHOOSE A PDF:</span></p>
+            <ul>
+                <li>
+                    <button ng-click="parseSamplePDFOne()">Sample PDF 1</button>
+                </li>
+                <li>
+                    <button ng-click="parseSamplePDFTwo()">Sample PDF 2</button>
+                </li>
+                <li>
+                    <div class="custom">
+                        <input type="file" file-model="myFile"/>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <button class="instruction submit" ng-click="uploadFile()">SUBMIT</button>
+
+    </div>
 </div>

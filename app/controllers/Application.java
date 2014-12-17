@@ -2,6 +2,7 @@ package controllers;
 // play debug : ./activator -jvm-debug <port> ~run
 import managers.PDFManager;
 import model.*;
+import play.api.Play;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -30,7 +31,6 @@ public class Application extends Controller {
             try {
                 pdfSession = PDFManager.get().parsePDF(pdfFile);
             } catch (IOException e) {
-
                 return ok("There was an error parsing the PDF");
             }
             System.out.println(Json.toJson(pdfSession));
@@ -39,6 +39,32 @@ public class Application extends Controller {
             return ok("There was an error with the file you gave me.");
         }
     }
+
+    public static Result countPDFSampleOne() {
+        File pdfFile = Play.getFile("public/pdfs/ColonelSanders-Cookbook.pdf", Play.current());
+        PDFSession pdfSession;
+        try {
+            pdfSession = PDFManager.get().parsePDF(pdfFile);
+        } catch (IOException e) {
+            return ok("There was an error parsing the PDF");
+        }
+        System.out.println(Json.toJson(pdfSession));
+        return ok(Json.toJson(pdfSession));
+    }
+
+    public static Result countPDFSampleTwo() {
+        File pdfFile = Play.getFile("public/pdfs/free_stonesoup_ecookbook.pdf", Play.current());
+        PDFSession pdfSession;
+        try {
+            pdfSession = PDFManager.get().parsePDF(pdfFile);
+        } catch (IOException e) {
+            return ok("There was an error parsing the PDF");
+        }
+        System.out.println(Json.toJson(pdfSession));
+        return ok(Json.toJson(pdfSession));
+    }
+
+
 
     public static Result status(String pdfSessionID) {
         PDFSessionStatus status = PDFManager.get().getStatus(pdfSessionID);

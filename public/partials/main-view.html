@@ -1,16 +1,24 @@
 <div ng-controller = "MainViewCtrl" ng-init="queryStatus();">
     <div id = "top-bar">
-        <div class="top-bar-content"><button ng-click = "getCopySets()">Click for sets</button></div>
-        <div id ="slider-range"></div>
+        <div class="top-bar-content">
+            <button ng-click = "showHideCopySets()">Show/Hide Print Sets</button></div>
 
-        <p>
-            <label for="amount">Auto-BW and Auto-Color Thresholds</label>
-            <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
-        </p>
-    </div>
-
-    <div id = "left-bar">
-    </div>
+            <div id= "bw-pages-toggle" class = "page-set">
+                Black and White: <span id="bw-pages"></span>
+                <p>Number of Pages: <span id="bw-page-count"></span></p>
+            </div>
+            <div id="color-pages-toggle" class = "page-set">
+                Color: <span id ="color-pages"></span>
+                <p>Number of Pages: <span id="color-page-count"></span></p>
+            </div>
+        <table class="slider-container">
+            <tr>
+                <td id="slider-min-percent"></td>
+                <td id ="slider-range"></td>
+                <td id="slider-max-percent"></td>
+            </tr>
+         </table>
+        </div>
     <table id="thumbnail-table">
         <tbody>
 

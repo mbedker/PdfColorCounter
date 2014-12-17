@@ -1,6 +1,6 @@
 var colorCounterControllers = angular.module('colorCounterControllers', []);
 
-colorCounterControllers.controller('SubmitPdfCtrl', ['$scope', '$location', 'fileUpload', '$http', function($scope, $location, fileUpload){
+colorCounterControllers.controller('SubmitPdfCtrl', ['$scope', '$location', 'fileUpload', '$http', function($scope, $location, fileUpload, $http){
 
     $scope.uploadFile = function(callback){
         var file = $scope.myFile;
@@ -20,6 +20,36 @@ colorCounterControllers.controller('SubmitPdfCtrl', ['$scope', '$location', 'fil
             }
         });
     };
+    $scope.hideShowText = function(text){
+        $(text).toggle('slow');
+        }
+
+    $scope.parseSamplePDFOne = function(){
+        $http.get('/pdf/start/sample-one').success(function(data, status, headers, config){
+            if(data){
+               $scope.pdfSession = data;
+               window.pdfSession = data;
+            if(window.localStorage){
+                window.localStorage.setItem("pdfSession", JSON.stringify(data));
+                }
+            $location.path('/main');
+            }
+        });
+    }
+
+        $scope.parseSamplePDFTwo = function(){
+            $http.get('/pdf/start/sample-two').success(function(data, status, headers, config){
+                if(data){
+                   $scope.pdfSession = data;
+                   window.pdfSession = data;
+                if(window.localStorage){
+                    window.localStorage.setItem("pdfSession", JSON.stringify(data));
+                    }
+                $location.path('/main');
+                }
+            });
+        }
+
 }]);
 
 colorCounterControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$http', function($scope, getStatus, $http) {
@@ -61,6 +91,7 @@ colorCounterControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$htt
             } else {
                 window.selectedPages.splice( $.inArray(pageNum, window.selectedPages), 1 );
             }
+            setCopySets();
         }
 
         var timer = window.setInterval(function(){
@@ -77,7 +108,6 @@ colorCounterControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$htt
                             pageContainer.onChange
                             filter.push(pg.pageNumber);
                             $scope.pageColorPercentMap[pg.pageNumber] = pg.percentColor;
-
                         }
                     }
                     if (data.isComplete)
@@ -92,13 +122,12 @@ colorCounterControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$htt
                 }(timerInterval)));
     };
 
-
-      $scope.getCopySets= function(){
+      var setCopySets = function(){
             var bwPages = [];
             var colorPages = [];
             var table = $('#thumbnail-table');
             var tbody = table.find('tbody');
-            for (i = 1; i < window.pdfSession.numberOfPages; i++){
+            for (i = 1; i <= window.pdfSession.numberOfPages; i++){
                 var page = tbody.find('#' + i);
                 if (page.hasClass('selectable selected')) {
                     colorPages.push(i);
@@ -106,88 +135,117 @@ colorCounterControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$htt
                     bwPages.push(i);
                 }
             }
-            console.log("bw pages : " + bwPages);
-            console.log("color pages : "  + colorPages);
-            getPrintString(bwPages);
+            var bwPageString = getPrintString(bwPages);
+            var bwPageCount = getPageCount(bwPages);
+            var colorPageString = getPrintString(colorPages);
+            var colorPageCount = getPageCount(colorPages);
+            $("#bw-pages").text(bwPageString);
+            $("#bw-page-count").text(bwPageCount);
+            $("#color-pages").text(colorPageString);
+            $("#color-page-count").text(colorPageCount);
         };
+
+        $scope.showHideCopySets = function(){
+            setCopySets();
+            $("#bw-pages-toggle").toggle('slow');
+            $("#color-pages-toggle").toggle('slow');
+            console.log("worked");
+        };
+
 
         var getPrintString = function(pages){
             var printString="";
-            for (var i = 0; i < pages.length; i++) {
-                var digit = pages[i];
-                var nextDigit = pages[i + 1];
-                stringEnd = printString.length - 1;
-                var lastChar = printString.charAt(stringEnd);
-                if ((digit + 1) == nextDigit) {
-                    /*The output of this block is to create a string that can be easily copied into a print selected pages window
-                    Example:
-                    var pages = [1, 2, 3, 5, 6, 7, 9, 12, 13, 14, 15, 20];
-                    output = 1-3,5-7,9,12-15,20
-                    */
-                    if (lastChar == "," || printString == "") {
-                        printString = printString + digit + "-";
-                    } else {
-                        printString = printString;
-                    }
-                } else if (i == (pages.length - 1)) {
-                    printString = printString + digit;
-                } else {
-                    if (printString.charAt(lastChar) == "-") {
+            if(pages.length === 0){
+                printString = "None"
+            } else {
+                for (var i = 0; i < pages.length; i++) {
+                    var digit = pages[i];
+                    var nextDigit = pages[i + 1];
+                    stringEnd = printString.length - 1;
+                    var lastChar = printString.charAt(stringEnd);
+                    if ((digit + 1) == nextDigit) {
+                        /*The output of this block is to create a string that can be easily copied into a print selected pages window
+                        Example:
+                        var pages = [1, 2, 3, 5, 6, 7, 9, 12, 13, 14, 15, 20];
+                        output = 1-3,5-7,9,12-15,20
+                        */
+                        if (lastChar == "," || printString == "") {
+                            printString = printString + digit + "-";
+                        } else {
+                            printString = printString;
+                        }
+                    } else if (i == (pages.length)-1) {
                         printString = printString + digit;
-                        //ends a "-" sequence
                     } else {
-                        printString = printString + digit + ",";
+                        if (printString.charAt(lastChar) == "-") {
+                            printString = printString + digit;
+                            //ends a "-" sequence
+                        } else {
+                            printString = printString + digit + ",";
+                        }
                     }
                 }
             }
+            return printString;
         };
+
+        var getPageCount = function(pages) {
+            var pageCount = 0;
+            for (var i = 0; i < pages.length; i++){
+                pageCount = pageCount + 1;
+            }
+            return pageCount;
+        }
 
     $(function(){
         $("#slider-range").slider({
-        range: true,
-        min: 0,
-        max: 100,
-        values: [ 0, 100 ],
-        orientation: 'vertical',
-        slide: function( event, ui ) {
-            $( "#amount" ).val( ui.values[ 0 ] + "% - " + ui.values[ 1 ] + "%" );
-            },
-        change: function (event, ui) {
-            var upperRange = ui.values[1];
-            var lowerRange = ui.values[0];
-            console.log( upperRange + ':' + lowerRange);
+            range: true,
+            min: 0,
+            max: 100,
+            values: [ 0, 100 ],
+            orientation: 'horziontal',
+            slide: function( event, ui ) {
+                    $("#slider-min-percent").text(ui.values[ 0 ] + "%");
+                    $("#slider-max-percent").text(ui.values[ 1 ] + "%");
+                },
+            change: function (event, ui) {
+                var upperRange = ui.values[1];
+                var lowerRange = ui.values[0];
+                if (!window.pdfStatus)
+                    return;
 
-            if (!window.pdfStatus)
-                return;
+                var tbody = $('#thumbnail-table tbody');
+                for (var i = 0; i < window.pdfStatus.completedPages.length; i++) {
+                    var pg = window.pdfStatus.completedPages[i];
+                    var element = tbody.find('#' + pg.pageNumber);
+                    var chunk = element.parent().parent();
+                    var speed = 100;
 
-            var tbody = $('#thumbnail-table tbody');
-            for (var i = 0; i < window.pdfStatus.completedPages.length; i++) {
-                var pg = window.pdfStatus.completedPages[i];
-                var element = tbody.find('#' + pg.pageNumber);
-
-                if (pg.percentColor > upperRange) {
-                    element.parent().parent().hide();
-                    if(element.hasClass('unselected')){
-                        selectorToggle(element, 'selected', 'unselected');
+                    if (pg.percentColor > upperRange) {
+                        chunk.hide(speed);
+                        if(element.hasClass('unselected')){
+                            selectorToggle(element, 'selected', 'unselected');
+                            }
+                        window.selectedPages.push(pg.pageNumber);
+                    } else if (pg.percentColor < lowerRange) {
+                        chunk.hide(speed);
+                        if (element.hasClass('selected')){
+                            selectorToggle(element, 'selected', 'unselected');
                         }
-                    window.selectedPages.push(pg.pageNumber);
-                } else if (pg.percentColor < lowerRange) {
-                    element.parent().parent().hide();
-                    if (element.hasClass('selected')){
-                        selectorToggle(element, 'selected', 'unselected');
+                        window.selectedPages.splice( $.inArray(pg.pageNumber, window.selectedPages), 1 );
+                    } else {
+                        element.removeClass('selected');
+                        window.selectedPages.splice( $.inArray(pg.pageNumber, window.selectedPages), 1 );
+                        chunk.show(speed);
                     }
-                    window.selectedPages.splice( $.inArray(pg.pageNumber, window.selectedPages), 1 );
-                } else {
-                    element.removeClass('selected');
-                    window.selectedPages.splice( $.inArray(pg.pageNumber, window.selectedPages), 1 );
-                    element.parent().parent().show();
+                    setCopySets();
                 }
             }
-        }
-
         });
-        $( "#amount" ).val(  $( "#slider-range" ).slider( "values", 0 ) +
-            "% - " + $( "#slider-range" ).slider( "values", 1 ) + "%" );
+
+        var slider = $( "#slider-range" );
+        $("#slider-min-percent").text(slider.slider("values", 0) + "%");
+        $("#slider-max-percent").text(slider.slider("values", 1) + "%");
     });
 
 }]);
