@@ -118,7 +118,6 @@ public class PDFManager {
                 }
             });
         }
-
         {
             pageExecutor.shutdown();
             try {

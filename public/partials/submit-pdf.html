@@ -1,25 +1,14 @@
 
 <div ng-controller = "SubmitPdfCtrl">
-
     <div class="content">
         <div class="instruction">
             <p><span class="instruction-text">CHOOSE A PDF:</span></p>
-            <ul>
-                <li>
-                    <button ng-click="parseSamplePDFOne()">Sample PDF 1</button>
-                </li>
-                <li>
-                    <button ng-click="parseSamplePDFTwo()">Sample PDF 2</button>
-                </li>
-                <li>
-                    <div class="custom">
-                        <input type="file" file-model="myFile"/>
-                    </div>
-                </li>
-            </ul>
+            <p><button ng-click="parseSamplePDFOne()">Sample PDF 1</button></p>
+            <p><button ng-click="parseSamplePDFTwo()">Sample PDF 2</button></p>
+            <div class="custom">
+                <input type="file" file-model="myFile"/>
+            </div>
         </div>
-
         <button class="instruction submit" ng-click="uploadFile()">SUBMIT</button>
-
     </div>
 </div>

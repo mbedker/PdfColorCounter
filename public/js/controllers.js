@@ -20,6 +20,7 @@ colorCounterControllers.controller('SubmitPdfCtrl', ['$scope', '$location', 'fil
             }
         });
     };
+
     $scope.hideShowText = function(text){
         $(text).toggle('slow');
         }
@@ -37,31 +38,33 @@ colorCounterControllers.controller('SubmitPdfCtrl', ['$scope', '$location', 'fil
         });
     }
 
-        $scope.parseSamplePDFTwo = function(){
-            $http.get('/pdf/start/sample-two').success(function(data, status, headers, config){
-                if(data){
-                   $scope.pdfSession = data;
-                   window.pdfSession = data;
-                if(window.localStorage){
-                    window.localStorage.setItem("pdfSession", JSON.stringify(data));
-                    }
-                $location.path('/main');
+    $scope.parseSamplePDFTwo = function(){
+        $http.get('/pdf/start/sample-two').success(function(data, status, headers, config){
+            if(data){
+               $scope.pdfSession = data;
+               window.pdfSession = data;
+            if(window.localStorage){
+                window.localStorage.setItem("pdfSession", JSON.stringify(data));
                 }
-            });
-        }
-
+            $location.path('/main');
+            }
+        });
+    }
 }]);
 
 colorCounterControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$http', function($scope, getStatus, $http) {
         var table = $('#thumbnail-table');
         var tbody = table.find('tbody');
+
     $scope.getPdfStatus = function(result, callback){
         getStatus.getPdfStatus(result, callback);
     };
+
     var selectorToggle = function(item, class1, class2){
         item.toggleClass(class1);
         item.toggleClass(class2);
     }
+
     $scope.queryStatus = function(){
         var timerInterval = 1000,
             $this = this;
@@ -219,7 +222,7 @@ colorCounterControllers.controller('MainViewCtrl', ['$scope', 'getStatus', '$htt
                     var pg = window.pdfStatus.completedPages[i];
                     var element = tbody.find('#' + pg.pageNumber);
                     var chunk = element.parent().parent();
-                    var speed = 100;
+                    var speed = 400;
 
                     if (pg.percentColor > upperRange) {
                         chunk.hide(speed);
