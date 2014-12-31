@@ -42,7 +42,7 @@ public class Application extends Controller {
 
     public static Result countPDFSampleOne() {
 //        File pdfFile = Play.getFile("public/pdfs/ColonelSanders-Cookbook.pdf", Play.current());
-        File pdfFile = new File(Play.current().classloader().getResource("pdfs/ColonelSanders-Cookbook.pdf").getFile());
+        File pdfFile = new File("samples/ColonelSanders-Cookbook.pdf");
         PDFSession pdfSession;
         try {
             pdfSession = PDFManager.get().parsePDF(pdfFile);
@@ -55,7 +55,8 @@ public class Application extends Controller {
 
     public static Result countPDFSampleTwo() {
 //        File pdfFile = Play.getFile("public/pdfs/free_stonesoup_ecookbook.pdf", Play.current());
-        File pdfFile = new File(Play.current().classloader().getResource("pdfs/free_stonesoup_ecookbook.pdf").getFile());
+        File pdfFile = new File("samples/free_stonesoup_ecookbook.pdf");
+//        File pdfFile = new File(Play.current().classloader().getResource("pdfs/free_stonesoup_ecookbook.pdf").getFile());
 
         PDFSession pdfSession;
         try {

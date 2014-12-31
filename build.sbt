@@ -14,7 +14,9 @@ libraryDependencies ++= Seq(
   "org.apache.pdfbox" % "pdfbox" % "1.8.6",
   "bouncycastle" % "bcprov-jdk15" % "140"
 )
- 
 
+mappings in Universal ++=
+  (baseDirectory.value / "samples" * "*" get) map
+    (x => x -> ("samples/" + x.getName))
 
 
