@@ -12,11 +12,11 @@ libraryDependencies ++= Seq(
   cache,
   javaWs,
   "org.apache.pdfbox" % "pdfbox" % "1.8.6",
-  "bouncycastle" % "bcprov-jdk15" % "140"
+  "bouncycastle" % "bcprov-jdk15" % "140",
+  "mysql" % "mysql-connector-java" % "5.1.18"
 )
 
 mappings in Universal ++=
   (baseDirectory.value / "samples" * "*" get) map
     (x => x -> ("samples/" + x.getName))
-
 
