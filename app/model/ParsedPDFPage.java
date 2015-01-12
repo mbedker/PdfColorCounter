@@ -1,9 +1,7 @@
 package model;
 
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Lob;
+import javax.persistence.*;
 
 import play.db.ebean.Model;
 
@@ -11,6 +9,7 @@ import play.db.ebean.Model;
 public class ParsedPDFPage extends Model {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public String id;
 
     private final String sessionId;

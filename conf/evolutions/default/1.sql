@@ -21,10 +21,6 @@ create table parsed_pdfpage (
   constraint pk_parsed_pdfpage primary key (id))
 ;
 
-create sequence pdfsession_seq;
-
-create sequence parsed_pdfpage_seq;
-
 
 
 
@@ -37,8 +33,4 @@ drop table if exists pdfsession;
 drop table if exists parsed_pdfpage;
 
 SET REFERENTIAL_INTEGRITY TRUE;
-
-drop sequence if exists pdfsession_seq;
-
-drop sequence if exists parsed_pdfpage_seq;
 

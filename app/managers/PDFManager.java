@@ -54,10 +54,6 @@ public class PDFManager {
         final Document document = new Document();
         try {
             String path = pdfFile.getAbsolutePath();
-            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             System.out.println(path);
             document.setFile(path);
         } catch (PDFException | PDFSecurityException | IOException e) {

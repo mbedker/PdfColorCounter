@@ -3,12 +3,16 @@ package model;
 import play.db.ebean.Model;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
 public class PDFSession extends Model {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private String sessionId;
 
     private long startDate;
