@@ -12,7 +12,6 @@ public class PDFSession extends Model {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private String sessionId;
 
     private long startDate;
